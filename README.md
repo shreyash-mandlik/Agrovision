@@ -1,6 +1,6 @@
 # 🌿 AgroVision v2 — Smart Farming Platform
 
-**Live Demo:** https://shreyash-mandlik.github.io/AgroVision/  
+**Live Demo:** https://shreyash-mandlik.github.io/Agrovision/
 **API:** https://ShreyashM25-agrovision-api.hf.space
 
 AI-powered smart farming platform for Indian farmers.
