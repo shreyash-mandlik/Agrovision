@@ -1,0 +1,2242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AgroVision — Smart Farming Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --green-50:#f0faf0;--green-100:#d6f0d6;--green-200:#aadaaa;--green-400:#4caf50;--green-600:#2e7d32;--green-800:#1b5e20;
+    --amber-50:#fff8e1;--amber-100:#ffecb3;--amber-400:#ffc107;--amber-600:#f57f17;
+    --blue-50:#e3f2fd;--blue-100:#bbdefb;--blue-400:#2196f3;--blue-600:#1565c0;
+    --teal-50:#e0f2f1;--teal-400:#009688;--teal-600:#00695c;
+    --bg:#0d1f0d;--bg2:#122012;--bg3:#162816;--card:#1a2e1a;--card2:#1f381f;
+    --border:#2a402a;--border2:#3a503a;
+    --text:#e8f5e9;--text2:#a5c8a5;--text3:#6a8f6a;
+    --accent:#4caf50;--accent2:#81c784;--gold:#ffc107;
+    --radius:12px;--radius-lg:18px;
+    font-size:15px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+  h1,h2,h3,h4{font-family:'Syne',sans-serif;}
+
+  /* SIDEBAR */
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;padding:0;}
+  .logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);}
+  .logo h1{font-size:20px;color:var(--accent2);letter-spacing:-0.5px;}
+  .logo span{font-size:11px;color:var(--text3);font-weight:400;}
+  .lang-selector{padding:10px 12px;border-bottom:1px solid var(--border);}
+  .lang-selector select{width:100%;background:var(--card);color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+  .nav{flex:1;padding:10px 0;overflow-y:auto;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;transition:all .2s;border-left:3px solid transparent;font-size:13px;color:var(--text2);}
+  .nav-item:hover{background:var(--card);color:var(--text);}
+  .nav-item.active{background:var(--card);color:var(--accent2);border-left-color:var(--accent);}
+  .nav-item .icon{font-size:16px;width:20px;text-align:center;}
+
+  /* MAIN */
+  .main{margin-left:220px;min-height:100vh;padding:0;}
+  .topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+  .topbar-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);}
+  .topbar-right{display:flex;align-items:center;gap:12px;}
+  .location-pill{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;}
+  .datetime-pill{font-size:12px;color:var(--text3);}
+
+  /* SECTIONS */
+  .section{display:none;padding:20px 24px;}
+  .section.active{display:block;}
+
+  /* CARDS */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;}
+  .card-sm{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+
+  /* WEATHER */
+  .weather-main{background:linear-gradient(135deg,#1a3a1a,#0d2d0d);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:22px;position:relative;overflow:hidden;}
+  .weather-main::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(76,175,80,.12) 0%,transparent 70%);pointer-events:none;}
+  .temp-big{font-family:'Syne',sans-serif;font-size:64px;font-weight:800;color:var(--accent2);line-height:1;}
+  .weather-desc{font-size:14px;color:var(--text2);margin-top:4px;}
+  .weather-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;}
+  .weather-stat{background:rgba(255,255,255,.04);border-radius:10px;padding:10px;text-align:center;}
+  .weather-stat .val{font-size:18px;font-weight:600;color:var(--text);font-family:'Syne',sans-serif;}
+  .weather-stat .lbl{font-size:11px;color:var(--text3);margin-top:2px;}
+  .forecast-row{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:16px;}
+  .forecast-day{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 6px;text-align:center;}
+  .forecast-day .day{font-size:10px;color:var(--text3);margin-bottom:6px;}
+  .forecast-day .icon{font-size:18px;margin:4px 0;}
+  .forecast-day .hi{font-size:13px;font-weight:600;color:var(--text);}
+  .forecast-day .lo{font-size:11px;color:var(--text3);}
+  .forecast-day .rain{font-size:10px;color:#64b5f6;margin-top:3px;}
+
+  /* BADGE */
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+  .badge-green{background:rgba(76,175,80,.15);color:var(--accent2);}
+  .badge-amber{background:rgba(255,193,7,.15);color:#ffd54f;}
+  .badge-red{background:rgba(244,67,54,.15);color:#ef9a9a;}
+  .badge-blue{background:rgba(33,150,243,.15);color:#90caf9;}
+
+  /* SECTION HEADER */
+  .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .sec-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
+  .sec-sub{font-size:12px;color:var(--text3);margin-top:1px;}
+
+  /* UPLOAD ZONE */
+  .upload-zone{border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:36px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02);}
+  .upload-zone:hover{border-color:var(--accent);background:rgba(76,175,80,.05);}
+  .upload-zone .big-icon{font-size:40px;margin-bottom:10px;}
+  .upload-zone p{color:var(--text2);font-size:13px;}
+
+  /* RESULT BOX */
+  .result-box{background:var(--card2);border:1px solid var(--border2);border-radius:var(--radius);padding:14px;margin-top:12px;}
+  .result-title{font-size:13px;font-weight:500;color:var(--accent2);margin-bottom:8px;font-family:'Syne',sans-serif;}
+
+  /* CHAT */
+  .chat-area{height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:14px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border);}
+  .msg{max-width:80%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.5;}
+  .msg.bot{background:var(--card2);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px;}
+  .msg.user{background:rgba(76,175,80,.18);color:var(--text);align-self:flex-end;border-bottom-right-radius:4px;}
+  .chat-input-row{display:flex;gap:8px;margin-top:10px;}
+  .chat-input-row input{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;}
+  .chat-input-row input::placeholder{color:var(--text3);}
+  .btn{background:var(--accent);color:#0d1f0d;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+  .btn:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent2);}
+  .btn-mic{background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:10px;padding:10px 14px;font-size:16px;cursor:pointer;transition:all .2s;}
+  .btn-mic:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-mic.recording{background:rgba(244,67,54,.2);border-color:#ef5350;color:#ef9a9a;animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+
+  /* INPUTS */
+  .form-group{margin-bottom:12px;}
+  .form-group label{display:block;font-size:12px;color:var(--text3);margin-bottom:5px;}
+  .form-group input,.form-group select{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;}
+  .form-group select option{background:var(--card);}
+
+  /* SOIL METER */
+  .meter-bar{background:var(--bg);border-radius:20px;height:10px;overflow:hidden;margin-top:4px;}
+  .meter-fill{height:100%;border-radius:20px;transition:width .5s;}
+  .meter-green{background:linear-gradient(90deg,#388e3c,#81c784);}
+  .meter-amber{background:linear-gradient(90deg,#f57f17,#ffd54f);}
+  .meter-red{background:linear-gradient(90deg,#c62828,#ef9a9a);}
+
+  /* SCHEME CARD */
+  .scheme-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;transition:all .2s;cursor:pointer;}
+  .scheme-card:hover{border-color:var(--accent);transform:translateY(-1px);}
+  .scheme-name{font-size:14px;font-weight:600;color:var(--text);font-family:'Syne',sans-serif;margin-bottom:4px;}
+  .scheme-desc{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:8px;}
+  .scheme-link{font-size:11px;color:var(--accent2);text-decoration:none;}
+  .scheme-link:hover{text-decoration:underline;}
+
+  /* CROP RESULT */
+  .crop-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .crop-item:last-child{border-bottom:none;}
+  .crop-icon{font-size:24px;width:40px;text-align:center;}
+  .crop-name{font-size:14px;font-weight:500;color:var(--text);font-family:'Syne',sans-serif;}
+  .crop-score{font-size:12px;color:var(--accent2);}
+
+  /* PROGRESS */
+  .progress-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .progress-label{font-size:12px;color:var(--text2);width:90px;flex-shrink:0;}
+  .progress-bar{flex:1;background:var(--bg);border-radius:20px;height:8px;overflow:hidden;}
+  .progress-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+  .progress-val{font-size:12px;color:var(--text3);width:36px;text-align:right;flex-shrink:0;}
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px;}
+
+  /* TABS */
+  .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+  .tab{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .2s;}
+  .tab.active{background:rgba(76,175,80,.15);border-color:var(--accent);color:var(--accent2);}
+
+  /* ALERT */
+  .alert{border-radius:var(--radius);padding:12px 14px;font-size:12px;line-height:1.5;margin-bottom:12px;}
+  .alert-green{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);color:var(--accent2);}
+  .alert-amber{background:rgba(255,193,7,.1);border:1px solid rgba(255,193,7,.3);color:#ffd54f;}
+  .alert-red{background:rgba(244,67,54,.1);border:1px solid rgba(244,67,54,.3);color:#ef9a9a;}
+
+  /* DETECTION RESULTS */
+  .detection-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:12px;margin:4px;}
+  .tag-crop{background:rgba(76,175,80,.15);border:1px solid rgba(76,175,80,.3);color:var(--accent2);}
+  .tag-weed{background:rgba(244,67,54,.15);border:1px solid rgba(244,67,54,.3);color:#ef9a9a;}
+  .tag-disease{background:rgba(255,193,7,.15);border:1px solid rgba(255,193,7,.3);color:#ffd54f;}
+
+  /* CITY INPUT */
+  .city-row{display:flex;gap:8px;margin-bottom:16px;}
+  .city-row input{flex:1;}
+
+  /* SECTION ANIMATION */
+  .section.active{animation:fadeIn .2s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  /* RESPONSIVE */
+  @media(max-width:900px){
+    .sidebar{width:60px;}
+    .logo span,.nav-item span,.lang-selector{display:none;}
+    .logo h1{font-size:14px;}
+    .main{margin-left:60px;}
+    .grid-4{grid-template-columns:1fr 1fr;}
+    .forecast-row{grid-template-columns:repeat(4,1fr);}
+  }
+  @media(max-width:600px){
+    .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
+    .main{margin-left:0;}
+    .sidebar{display:none;}
+    .forecast-row{grid-template-columns:repeat(3,1fr);}
+  }
+
+  /* WEED CONFIDENCE */
+  .conf-pill{font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.07);color:var(--text2);}
+
+  /* FEEDBACK */
+  .feedback-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-top:12px;}
+  .feedback-bar span{font-size:12px;color:var(--text3);flex:1;}
+  .fb-btn{background:transparent;border:1px solid var(--border2);border-radius:8px;padding:5px 12px;font-size:14px;cursor:pointer;transition:all .2s;color:var(--text2);}
+  .fb-btn:hover{border-color:var(--accent);transform:scale(1.1);}
+  .fb-btn.voted-up{background:rgba(76,175,80,.2);border-color:var(--accent);color:var(--accent2);}
+  .fb-btn.voted-down{background:rgba(244,67,54,.15);border-color:#ef5350;color:#ef9a9a;}
+  .fb-btn.voted-neutral{background:rgba(255,193,7,.15);border-color:#ffc107;color:#ffd54f;}
+  .fb-count{font-size:11px;color:var(--text3);min-width:20px;text-align:center;}
+
+  /* FEEDBACK STATS PANEL in sidebar */
+  .fb-stats{padding:10px 12px;border-top:1px solid var(--border);margin-top:auto;}
+  .fb-stats-title{font-size:11px;color:var(--text3);margin-bottom:8px;font-family:'Syne',sans-serif;}
+  .fb-stat-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+  .fb-stat-label{font-size:11px;color:var(--text2);}
+  .fb-stat-bar{flex:1;height:4px;background:var(--bg);border-radius:4px;margin:0 8px;overflow:hidden;}
+  .fb-stat-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .5s;}
+  .fb-stat-num{font-size:11px;color:var(--text3);min-width:28px;text-align:right;}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;font-size:13px;color:var(--text);z-index:999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <h1>🌿 AgroVision</h1>
+    <span>Smart Farming Platform</span>
+  </div>
+  <div class="lang-selector">
+    <select id="langSelect" onchange="setLanguage(this.value)">
+      <option value="en">🇬🇧 English</option>
+      <option value="hi">🇮🇳 हिन्दी</option>
+      <option value="mr">महाराष्ट्र मराठी</option>
+      <option value="te">తెలుగు</option>
+      <option value="ta">தமிழ்</option>
+      <option value="kn">ಕನ್ನಡ</option>
+    </select>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" onclick="showSection('weather')"><span class="icon">🌤</span><span data-key="nav_weather">Weather</span></div>
+    <div class="nav-item" onclick="showSection('chat')"><span class="icon">💬</span><span data-key="nav_chat">Krishi Chat AI</span></div>
+    <div class="nav-item" onclick="showSection('detection')"><span class="icon">🔬</span><span data-key="nav_detect">Crop & Weed Detection</span></div>
+    <div class="nav-item" onclick="showSection('crop')"><span class="icon">🌾</span><span data-key="nav_crop">Crop Recommendation</span></div>
+    <div class="nav-item" onclick="showSection('fertilizer')"><span class="icon">🧪</span><span data-key="nav_fert">Fertilizer & Pesticide</span></div>
+    <div class="nav-item" onclick="showSection('soil')"><span class="icon">🪨</span><span data-key="nav_soil">Soil Health Analyzer</span></div>
+    <div class="nav-item" onclick="showSection('schemes')"><span class="icon">📋</span><span data-key="nav_schemes">Govt. Schemes</span></div>
+  </nav>
+  <div class="fb-stats" id="sidebarFbStats">
+    <div class="fb-stats-title">📊 Feedback Stats</div>
+    <div class="fb-stat-row">
+      <span class="fb-stat-label">Crops</span>
+      <div class="fb-stat-bar"><div class="fb-stat-fill" id="fb-bar-crop" style="width:0%"></div></div>
+      <span class="fb-stat-num" id="fb-num-crop">—</span>
+    </div>
+    <div class="fb-stat-row">
+      <span class="fb-stat-label">Soil</span>
+      <div class="fb-stat-bar"><div class="fb-stat-fill" id="fb-bar-soil" style="width:0%"></div></div>
+      <span class="fb-stat-num" id="fb-num-soil">—</span>
+    </div>
+    <div class="fb-stat-row">
+      <span class="fb-stat-label">Fertilizer</span>
+      <div class="fb-stat-bar"><div class="fb-stat-fill" id="fb-bar-fert" style="width:0%"></div></div>
+      <span class="fb-stat-num" id="fb-num-fert">—</span>
+    </div>
+    <div class="fb-stat-row">
+      <span class="fb-stat-label">Chat</span>
+      <div class="fb-stat-bar"><div class="fb-stat-fill" id="fb-bar-chat" style="width:0%"></div></div>
+      <span class="fb-stat-num" id="fb-num-chat">—</span>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:6px;text-align:center;">Helps improve recommendations</div>
+  </div>
+</aside>
+
+<!-- TOAST -->
+<div class="toast" id="toastEl"></div>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title" data-key="app_title">AgroVision — Smart Farming Platform</div>
+    <div class="topbar-right">
+      <div class="location-pill" onclick="showSection('crop')">
+        <span>📍</span>
+        <span id="currentCity">Pune, MH</span>
+      </div>
+      <div class="datetime-pill" id="clockEl">—</div>
+    </div>
+  </div>
+
+  <!-- ===== WEATHER SECTION ===== -->
+  <div id="sec-weather" class="section active">
+    <div class="sec-head">
+      <div><div class="sec-title" data-key="weather_title">Live Weather Conditions</div><div class="sec-sub" id="weatherCity">Loading location...</div></div>
+      <div style="display:flex;gap:8px;">
+        <input id="cityInput" placeholder="Enter city/village..." style="background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:7px 12px;color:var(--text);font-size:12px;width:180px;font-family:'DM Sans',sans-serif;"/>
+        <button class="btn" onclick="fetchWeather()" style="padding:7px 14px;font-size:12px;">Search</button>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:14px;">
+      <div class="weather-main">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+          <div>
+            <div style="font-size:13px;color:var(--text3);margin-bottom:4px;" id="weatherDate">—</div>
+            <div class="temp-big" id="tempEl">—°</div>
+            <div class="weather-desc" id="descEl">Loading weather...</div>
+            <div style="margin-top:8px;"><span class="badge badge-green" id="feelEl">Feels like —°</span></div>
+          </div>
+          <div style="font-size:56px;" id="weatherIcon">🌤</div>
+        </div>
+        <div class="weather-stats">
+          <div class="weather-stat"><div class="val" id="humidEl">—%</div><div class="lbl" data-key="humidity">Humidity</div></div>
+          <div class="weather-stat"><div class="val" id="windEl">— km/h</div><div class="lbl" data-key="wind">Wind</div></div>
+          <div class="weather-stat"><div class="val" id="visEl">— km</div><div class="lbl" data-key="visibility">Visibility</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="result-title" data-key="agri_advisory">Agricultural Advisory</div>
+        <div id="agriAdvisory" style="font-size:12px;color:var(--text2);line-height:1.7;">
+          Loading weather data for advisory...
+        </div>
+        <div style="margin-top:12px;">
+          <div class="result-title" data-key="air_quality">Air Quality & UV</div>
+          <div class="weather-stats" style="margin-top:8px;">
+            <div class="weather-stat"><div class="val" id="uvEl">—</div><div class="lbl">UV Index</div></div>
+            <div class="weather-stat"><div class="val" id="pressEl">—</div><div class="lbl" data-key="pressure">Pressure</div></div>
+            <div class="weather-stat"><div class="val" id="dewEl">—°</div><div class="lbl" data-key="dew">Dew Point</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7 DAY FORECAST -->
+    <div class="card" style="margin-bottom:14px;">
+      <div class="sec-head" style="margin-bottom:12px;"><div class="sec-title" data-key="forecast">7-Day Forecast</div></div>
+      <div class="forecast-row" id="forecastRow">
+        <!-- filled by JS -->
+      </div>
+    </div>
+
+    <!-- HOURLY -->
+    <div class="card">
+      <div class="result-title" data-key="hourly">Today's Hourly Overview</div>
+      <div id="hourlyRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-top:10px;">
+        <!-- filled by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== KRISHI CHAT SECTION ===== -->
+  <div id="sec-chat" class="section">
+    <div class="sec-head">
+      <div><div class="sec-title" data-key="chat_title">Krishi Chat AI</div><div class="sec-sub" data-key="chat_sub">Your personal farming assistant — ask anything</div></div>
+      <div style="display:flex;gap:8px;">
+        <select id="chatLang" style="background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:6px 10px;color:var(--text2);font-size:12px;font-family:'DM Sans',sans-serif;">
+          <option value="en">English</option>
+          <option value="hi">हिन्दी</option>
+          <option value="mr">मराठी</option>
+          <option value="te">తెలుగు</option>
+          <option value="ta">தமிழ்</option>
+          <option value="kn">ಕನ್ನಡ</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="chat-area" id="chatArea">
+          <div class="msg bot" id="botWelcome">🌿 Namaste! I am Krishi AI, your smart farming assistant. Ask me about crops, soil, weather, fertilizers, government schemes, or any farming question. I understand Hindi, Marathi, Telugu, Tamil, Kannada, and English!</div>
+        </div>
+        <div class="chat-input-row">
+          <button class="btn-mic" id="micBtn" onclick="toggleMic()" title="Voice Input">🎤</button>
+          <input id="chatInput" placeholder="Ask about crops, diseases, soil..." onkeydown="if(event.key==='Enter')sendChat()" />
+          <button class="btn" onclick="sendChat()">Send</button>
+        </div>
+        <div id="micStatus" style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center;height:14px;"></div>
+      </div>
+      <div>
+        <div class="card-sm" style="margin-bottom:12px;">
+          <div class="result-title" data-key="quick_q">Quick Questions</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+            <button class="btn-outline" onclick="quickAsk('Best crops for Pune in June?')">Crops for Pune, June</button>
+            <button class="btn-outline" onclick="quickAsk('How to treat yellow leaves on wheat?')">Yellow leaves on wheat</button>
+            <button class="btn-outline" onclick="quickAsk('Organic fertilizer for tomato?')">Organic fertilizer</button>
+            <button class="btn-outline" onclick="quickAsk('PM Kisan Yojana details?')">PM Kisan Yojana</button>
+            <button class="btn-outline" onclick="quickAsk('Rain expected this week in Maharashtra?')">Rain forecast</button>
+            <button class="btn-outline" onclick="quickAsk('Soil pH for rice cultivation?')">Soil pH for rice</button>
+          </div>
+        </div>
+        <div class="card-sm">
+          <div class="result-title" data-key="voice_langs">Supported Voice Languages</div>
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);"><span>🇬🇧</span> English (India)</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);"><span>🇮🇳</span> हिन्दी — Hindi</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);"><span>🟧</span> मराठी — Marathi</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);"><span>🟦</span> తెలుగు — Telugu</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);"><span>🟥</span> தமிழ் — Tamil</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);"><span>🟨</span> ಕನ್ನಡ — Kannada</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DETECTION SECTION ===== -->
+  <div id="sec-detection" class="section">
+    <div class="sec-head">
+      <div><div class="sec-title" data-key="detect_title">Crop & Weed Detection</div><div class="sec-sub" data-key="detect_sub">Upload image or use camera to identify crops, weeds & diseases</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="tabs">
+          <div class="tab active" onclick="setTab(this,'upload-tab','detect-tabs')">Upload Image</div>
+          <div class="tab" onclick="setTab(this,'camera-tab','detect-tabs')">Camera</div>
+        </div>
+
+        <div id="upload-tab" class="detect-tabs">
+          <div class="upload-zone" onclick="document.getElementById('fileInput').click()" id="dropZone">
+            <div class="big-icon">📷</div>
+            <p style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;">Drop image here or click to upload</p>
+            <p>Supports JPG, PNG — leaf, crop field, weed images</p>
+            <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleImageUpload(event)"/>
+          </div>
+          <div id="imgPreviewBox" style="display:none;margin-top:12px;text-align:center;">
+            <img id="imgPreview" style="max-width:100%;border-radius:var(--radius);border:1px solid var(--border);max-height:220px;object-fit:contain;"/>
+          </div>
+        </div>
+
+        <div id="camera-tab" class="detect-tabs" style="display:none;">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;">
+            <video id="cameraStream" style="width:100%;border-radius:8px;display:none;max-height:220px;" autoplay playsinline></video>
+            <div id="cameraPlaceholder">
+              <div style="font-size:40px;margin-bottom:10px;">📸</div>
+              <p style="font-size:13px;color:var(--text2);">Click below to start camera</p>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;justify-content:center;">
+              <button class="btn" onclick="startCamera()">Start Camera</button>
+              <button class="btn-outline" id="captureBtn" onclick="capturePhoto()" style="display:none;">Capture Photo</button>
+              <button class="btn-outline" onclick="stopCamera()">Stop</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn" onclick="runDetection()" style="flex:1;">Analyze Image</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="card-sm" id="detectionResults">
+          <div class="result-title" data-key="detect_result">Detection Results</div>
+          <div id="detectOutput" style="color:var(--text3);font-size:12px;padding:20px;text-align:center;">
+            Upload an image and click Analyze to see results
+          </div>
+        </div>
+
+        <div class="card-sm" style="margin-top:12px;">
+          <div class="result-title" data-key="detect_info">Detection Capabilities</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-top:6px;">
+            ✅ 38+ crop disease detection<br/>
+            ✅ Weed species identification<br/>
+            ✅ Crop type recognition<br/>
+            ✅ Disease severity assessment<br/>
+            ✅ Treatment recommendations
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CROP RECOMMENDATION SECTION ===== -->
+  <div id="sec-crop" class="section">
+    <div class="sec-head">
+      <div><div class="sec-title" data-key="crop_title">Crop Recommendation</div><div class="sec-sub" data-key="crop_sub">Get best crops based on soil, weather & location</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="card-sm" style="margin-bottom:12px;">
+          <div class="result-title" data-key="location_params">Location-Based Parameters</div>
+          <div class="city-row" style="margin-top:10px;">
+            <input id="cropCity" placeholder="Enter city or village in India..." style="background:var(--card2);border:1px solid var(--border2);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;"/>
+            <button class="btn" onclick="loadCityParams()" style="padding:9px 16px;font-size:12px;">Load</button>
+            <button class="btn-outline" onclick="useCurrentLocation()" style="font-size:12px;padding:9px;">📍 GPS</button>
+          </div>
+          <div id="cityParamDisplay" style="font-size:12px;color:var(--text2);line-height:1.8;padding:10px;background:var(--bg3);border-radius:9px;display:none;">
+          </div>
+        </div>
+
+        <div class="card-sm">
+          <div class="result-title" data-key="soil_params">Soil Parameters</div>
+          <div class="grid-2" style="margin-top:10px;">
+            <div class="form-group"><label>Nitrogen (N) kg/ha</label><input id="paramN" type="number" placeholder="90" value="90"/></div>
+            <div class="form-group"><label>Phosphorus (P)</label><input id="paramP" type="number" placeholder="42" value="42"/></div>
+            <div class="form-group"><label>Potassium (K)</label><input id="paramK" type="number" placeholder="43" value="43"/></div>
+            <div class="form-group"><label>Temperature (°C)</label><input id="paramTemp" type="number" placeholder="21" value="21"/></div>
+            <div class="form-group"><label>Humidity (%)</label><input id="paramHumid" type="number" placeholder="82" value="82"/></div>
+            <div class="form-group"><label>Soil pH</label><input id="paramPH" type="number" step="0.1" placeholder="6.5" value="6.5"/></div>
+            <div class="form-group"><label>Rainfall (mm)</label><input id="paramRain" type="number" placeholder="200" value="200"/></div>
+            <div class="form-group"><label>Season</label>
+              <select id="paramSeason">
+                <option>Kharif (Jun–Oct)</option>
+                <option>Rabi (Nov–Mar)</option>
+                <option>Zaid (Apr–May)</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn" onclick="getCropRec()" style="width:100%;margin-top:4px;">Get Crop Recommendations</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="card-sm" id="cropResultCard">
+          <div class="result-title" data-key="crop_result">Recommended Crops</div>
+          <div id="cropResults" style="color:var(--text3);font-size:12px;padding:20px;text-align:center;">
+            Fill parameters and click recommend
+          </div>
+          <div class="feedback-bar" id="fb-crop" style="display:none;">
+            <span>Was this recommendation helpful?</span>
+            <button class="fb-btn" onclick="submitFeedback('crop','up',this)" title="Helpful">👍</button>
+            <span class="fb-count" id="fb-crop-up">0</span>
+            <button class="fb-btn" onclick="submitFeedback('crop','neutral',this)" title="Somewhat">😐</button>
+            <button class="fb-btn" onclick="submitFeedback('crop','down',this)" title="Not helpful">👎</button>
+            <span class="fb-count" id="fb-crop-down">0</span>
+          </div>
+        </div>
+
+        <div class="card-sm" style="margin-top:12px;">
+          <div class="result-title" data-key="city_suggestions">Indian Regions</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+            <button class="btn-outline" onclick="loadPreset('Pune')">Pune</button>
+            <button class="btn-outline" onclick="loadPreset('Mumbai')">Mumbai</button>
+            <button class="btn-outline" onclick="loadPreset('Nashik')">Nashik</button>
+            <button class="btn-outline" onclick="loadPreset('Nagpur')">Nagpur</button>
+            <button class="btn-outline" onclick="loadPreset('Kolhapur')">Kolhapur</button>
+            <button class="btn-outline" onclick="loadPreset('Solapur')">Solapur</button>
+            <button class="btn-outline" onclick="loadPreset('Aurangabad')">Aurangabad</button>
+            <button class="btn-outline" onclick="loadPreset('Amravati')">Amravati</button>
+            <button class="btn-outline" onclick="loadPreset('Sangli')">Sangli</button>
+            <button class="btn-outline" onclick="loadPreset('Ratnagiri')">Ratnagiri</button>
+            <button class="btn-outline" onclick="loadPreset('Delhi')">Delhi</button>
+            <button class="btn-outline" onclick="loadPreset('Lucknow')">Lucknow</button>
+            <button class="btn-outline" onclick="loadPreset('Varanasi')">Varanasi</button>
+            <button class="btn-outline" onclick="loadPreset('Patna')">Patna</button>
+            <button class="btn-outline" onclick="loadPreset('Amritsar')">Amritsar</button>
+            <button class="btn-outline" onclick="loadPreset('Ludhiana')">Ludhiana</button>
+            <button class="btn-outline" onclick="loadPreset('Jaipur')">Jaipur</button>
+            <button class="btn-outline" onclick="loadPreset('Jodhpur')">Jodhpur</button>
+            <button class="btn-outline" onclick="loadPreset('Nagaur')">Nagaur</button>
+            <button class="btn-outline" onclick="loadPreset('Hyderabad')">Hyderabad</button>
+            <button class="btn-outline" onclick="loadPreset('Warangal')">Warangal</button>
+            <button class="btn-outline" onclick="loadPreset('Guntur')">Guntur</button>
+            <button class="btn-outline" onclick="loadPreset('Vizag')">Vizag</button>
+            <button class="btn-outline" onclick="loadPreset('Chennai')">Chennai</button>
+            <button class="btn-outline" onclick="loadPreset('Coimbatore')">Coimbatore</button>
+            <button class="btn-outline" onclick="loadPreset('Madurai')">Madurai</button>
+            <button class="btn-outline" onclick="loadPreset('Bengaluru')">Bengaluru</button>
+            <button class="btn-outline" onclick="loadPreset('Mysuru')">Mysuru</button>
+            <button class="btn-outline" onclick="loadPreset('Dharwad')">Dharwad</button>
+            <button class="btn-outline" onclick="loadPreset('Indore')">Indore</button>
+            <button class="btn-outline" onclick="loadPreset('Bhopal')">Bhopal</button>
+            <button class="btn-outline" onclick="loadPreset('Raipur')">Raipur</button>
+            <button class="btn-outline" onclick="loadPreset('Bhubaneswar')">Bhubaneswar</button>
+            <button class="btn-outline" onclick="loadPreset('Kolkata')">Kolkata</button>
+            <button class="btn-outline" onclick="loadPreset('Siliguri')">Siliguri</button>
+            <button class="btn-outline" onclick="loadPreset('Guwahati')">Guwahati</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FERTILIZER SECTION ===== -->
+  <div id="sec-fertilizer" class="section">
+    <div class="sec-head">
+      <div><div class="sec-title" data-key="fert_title">Fertilizer & Pesticide Recommendation</div><div class="sec-sub" data-key="fert_sub">Optimal inputs for your crop and soil conditions</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="card-sm" style="margin-bottom:12px;">
+          <div class="result-title" data-key="crop_details">Crop Details</div>
+          <div style="margin-top:10px;">
+            <div class="form-group"><label>Select Crop</label>
+              <select id="fertCrop">
+                <option>Wheat</option><option>Rice</option><option>Maize</option><option>Cotton</option>
+                <option>Sugarcane</option><option>Tomato</option><option>Onion</option><option>Potato</option>
+                <option>Soybean</option><option>Groundnut</option><option>Mango</option><option>Grapes</option>
+                <option>Banana</option><option>Coconut</option><option>Chilli</option><option>Turmeric</option>
+                <option>Chickpea</option><option>Mustard</option><option>Sunflower</option><option>Sorghum (Jowar)</option>
+                <option>Pearl Millet (Bajra)</option><option>Pigeonpea (Arhar)</option><option>Lentil</option>
+                <option>Garlic</option><option>Cauliflower</option><option>Cabbage</option><option>Brinjal</option>
+                <option>Okra (Bhindi)</option><option>Cucumber</option><option>Watermelon</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Growth Stage</label>
+              <select id="fertStage">
+                <option>Seedling (0–3 weeks)</option>
+                <option>Vegetative (1–3 months)</option>
+                <option>Flowering</option>
+                <option>Fruiting / Grain filling</option>
+                <option>Maturity / Pre-harvest</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Observed Problem (optional)</label>
+              <select id="fertProblem">
+                <option>None</option>
+                <option>Yellowing leaves</option>
+                <option>Stunted growth</option>
+                <option>Wilting</option>
+                <option>Leaf spots / blight</option>
+                <option>Insect damage</option>
+                <option>Root rot</option>
+                <option>Poor fruiting</option>
+              </select>
+            </div>
+            <div class="grid-2">
+              <div class="form-group"><label>Soil pH</label><input id="fertPH" type="number" step="0.1" placeholder="6.5" value="6.5"/></div>
+              <div class="form-group"><label>Last fertilized</label>
+                <select id="fertLast">
+                  <option>Never / Unknown</option>
+                  <option>2 weeks ago</option>
+                  <option>1 month ago</option>
+                  <option>3 months ago</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn" onclick="getFertRec()" style="width:100%;">Get Recommendations</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card-sm" id="fertResultCard">
+          <div class="result-title" data-key="fert_result">Recommendations</div>
+          <div id="fertResults" style="color:var(--text3);font-size:12px;padding:20px;text-align:center;">
+            Select crop details and click recommend
+          </div>
+          <div class="feedback-bar" id="fb-fert" style="display:none;">
+            <span>Was this advice useful?</span>
+            <button class="fb-btn" onclick="submitFeedback('fert','up',this)" title="Helpful">👍</button>
+            <span class="fb-count" id="fb-fert-up">0</span>
+            <button class="fb-btn" onclick="submitFeedback('fert','neutral',this)" title="Somewhat">😐</button>
+            <button class="fb-btn" onclick="submitFeedback('fert','down',this)" title="Not helpful">👎</button>
+            <span class="fb-count" id="fb-fert-down">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SOIL HEALTH SECTION ===== -->
+  <div id="sec-soil" class="section">
+    <div class="sec-head">
+      <div><div class="sec-title" data-key="soil_title">Soil Health Analyzer</div><div class="sec-sub" data-key="soil_sub">Analyze your soil quality with detailed parameter assessment</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="card-sm">
+          <div class="result-title" data-key="soil_inputs">Enter Soil Parameters</div>
+          <div style="margin-top:10px;">
+            <div class="grid-2">
+              <div class="form-group"><label>pH Level</label><input id="soilPH" type="number" step="0.1" placeholder="6.5" value="6.5"/></div>
+              <div class="form-group"><label>Organic Matter (%)</label><input id="soilOM" type="number" step="0.1" placeholder="3.2" value="3.2"/></div>
+              <div class="form-group"><label>Nitrogen (N) ppm</label><input id="soilN" type="number" placeholder="120" value="120"/></div>
+              <div class="form-group"><label>Phosphorus (P) ppm</label><input id="soilP" type="number" placeholder="25" value="25"/></div>
+              <div class="form-group"><label>Potassium (K) ppm</label><input id="soilK" type="number" placeholder="180" value="180"/></div>
+              <div class="form-group"><label>Calcium (Ca) ppm</label><input id="soilCa" type="number" placeholder="900" value="900"/></div>
+              <div class="form-group"><label>Magnesium (Mg) ppm</label><input id="soilMg" type="number" placeholder="150" value="150"/></div>
+              <div class="form-group"><label>Soil Type</label>
+                <select id="soilType">
+                  <option>Black Cotton</option>
+                  <option>Red Laterite</option>
+                  <option>Alluvial</option>
+                  <option>Sandy Loam</option>
+                  <option>Clay</option>
+                  <option>Silt Loam</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Moisture (%)</label><input id="soilMoisture" type="number" placeholder="35" value="35"/></div>
+              <div class="form-group"><label>EC (dS/m)</label><input id="soilEC" type="number" step="0.1" placeholder="0.8" value="0.8"/></div>
+            </div>
+            <button class="btn" onclick="analyzeSoil()" style="width:100%;margin-top:4px;">Analyze Soil Health</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card-sm" id="soilResultCard">
+          <div class="result-title" data-key="soil_result">Soil Health Report</div>
+          <div id="soilResults" style="color:var(--text3);font-size:12px;padding:20px;text-align:center;">
+            Enter parameters and click Analyze
+          </div>
+          <div class="feedback-bar" id="fb-soil" style="display:none;">
+            <span>Was this analysis accurate?</span>
+            <button class="fb-btn" onclick="submitFeedback('soil','up',this)" title="Accurate">👍</button>
+            <span class="fb-count" id="fb-soil-up">0</span>
+            <button class="fb-btn" onclick="submitFeedback('soil','neutral',this)" title="Partially">😐</button>
+            <button class="fb-btn" onclick="submitFeedback('soil','down',this)" title="Not accurate">👎</button>
+            <span class="fb-count" id="fb-soil-down">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCHEMES SECTION ===== -->
+  <div id="sec-schemes" class="section">
+    <div class="sec-head">
+      <div><div class="sec-title" data-key="schemes_title">Government Schemes for Farmers</div><div class="sec-sub" data-key="schemes_sub">Central & state government benefits, subsidies and programs</div></div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="setTab(this,'central-schemes','scheme-tabs')">Central Govt.</div>
+      <div class="tab" onclick="setTab(this,'state-schemes','scheme-tabs')">State (Maharashtra)</div>
+      <div class="tab" onclick="setTab(this,'insurance-schemes','scheme-tabs')">Insurance</div>
+    </div>
+
+    <div id="central-schemes" class="scheme-tabs">
+      <div class="grid-2">
+        <div class="scheme-card"><div class="badge badge-green" style="margin-bottom:8px;">Financial Support</div><div class="scheme-name">PM-KISAN (Pradhan Mantri Kisan Samman Nidhi)</div><div class="scheme-desc">Direct income support of ₹6,000/year in 3 installments to all farmer families. No middlemen — directly to bank account.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span class="badge badge-amber">₹6,000/year</span><a class="scheme-link" href="https://pmkisan.gov.in" target="_blank">→ pmkisan.gov.in</a></div></div>
+        <div class="scheme-card"><div class="badge badge-blue" style="margin-bottom:8px;">Soil Health</div><div class="scheme-name">Soil Health Card Scheme</div><div class="scheme-desc">Free soil testing and health cards providing nutrient status of soil across 12 parameters with crop-wise fertilizer recommendations.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span class="badge badge-green">Free</span><a class="scheme-link" href="https://soilhealth.dac.gov.in" target="_blank">→ soilhealth.dac.gov.in</a></div></div>
+        <div class="scheme-card"><div class="badge badge-amber" style="margin-bottom:8px;">Credit Support</div><div class="scheme-name">PM Fasal Bima Yojana (PMFBY)</div><div class="scheme-desc">Comprehensive crop insurance covering pre-sowing to post-harvest losses due to natural calamities, pests and diseases.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span class="badge badge-amber">Low Premium</span><a class="scheme-link" href="https://pmfby.gov.in" target="_blank">→ pmfby.gov.in</a></div></div>
+        <div class="scheme-card"><div class="badge badge-green" style="margin-bottom:8px;">Irrigation</div><div class="scheme-name">PM Krishi Sinchayee Yojana</div><div class="scheme-desc">Har Khet Ko Pani — ensuring irrigation access to every farm. 55 lakh ha brought under micro-irrigation. 90% subsidy for small/marginal farmers.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span class="badge badge-green">90% subsidy</span><a class="scheme-link" href="https://pmksy.gov.in" target="_blank">→ pmksy.gov.in</a></div></div>
+        <div class="scheme-card"><div class="badge badge-blue" style="margin-bottom:8px;">Technology</div><div class="scheme-name">Digital Agriculture Mission 2025</div><div class="scheme-desc">Agristack — digital identity for farmers. AI/ML crop advisory, drone-based monitoring, satellite-based soil analysis at village level.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span class="badge badge-blue">New 2024</span><a class="scheme-link" href="https://agricoop.nic.in" target="_blank">→ agricoop.nic.in</a></div></div>
+        <div class="scheme-card"><div class="badge badge-amber" style="margin-bottom:8px;">Market Access</div><div class="scheme-name">e-NAM (National Agriculture Market)</div><div class="scheme-desc">Online trading platform connecting 1,361 mandis across 23 states. Farmers can sell from home, get better price discovery.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span class="badge badge-green">Live</span><a class="scheme-link" href="https://enam.gov.in" target="_blank">→ enam.gov.in</a></div></div>
+      </div>
+    </div>
+
+    <div id="state-schemes" class="scheme-tabs" style="display:none;">
+      <div class="grid-2">
+        <div class="scheme-card"><div class="badge badge-green" style="margin-bottom:8px;">Maharashtra</div><div class="scheme-name">Mahatma Jyotirao Phule Shetkari Karzmukti</div><div class="scheme-desc">Farm loan waiver scheme for Maharashtra farmers. Up to ₹2 lakh agricultural loan waived for eligible farmers.</div><div style="display:flex;gap:8px;"><span class="badge badge-amber">₹2L waiver</span><a class="scheme-link" href="https://maha.gov.in" target="_blank">→ maha.gov.in</a></div></div>
+        <div class="scheme-card"><div class="badge badge-blue" style="margin-bottom:8px;">Maharashtra</div><div class="scheme-name">Namo Shetkari Mahasanman Nidhi</div><div class="scheme-desc">Additional ₹6,000/year to farmers on top of PM-KISAN. Total ₹12,000/year direct benefit to Maharashtra farmers.</div><div style="display:flex;gap:8px;"><span class="badge badge-green">₹12,000/yr total</span><a class="scheme-link" href="https://nsmn.mahait.org" target="_blank">→ nsmn.mahait.org</a></div></div>
+        <div class="scheme-card"><div class="badge badge-amber" style="margin-bottom:8px;">Maharashtra</div><div class="scheme-name">Govari Shetkari Yojana</div><div class="scheme-desc">Subsidised seeds, fertilisers and irrigation equipment for tribal and small farmers in Vidarbha and Marathwada regions.</div><div style="display:flex;gap:8px;"><span class="badge badge-green">50% subsidy</span></div></div>
+        <div class="scheme-card"><div class="badge badge-green" style="margin-bottom:8px;">Maharashtra</div><div class="scheme-name">Farmer Producer Organisations (FPOs)</div><div class="scheme-desc">Formation support, equity grants up to ₹15 lakh and matching equity for FPO formation in Maharashtra. Collective bargaining power.</div><div style="display:flex;gap:8px;"><span class="badge badge-amber">₹15L grant</span><a class="scheme-link" href="https://fpc.org.in" target="_blank">→ fpc.org.in</a></div></div>
+      </div>
+    </div>
+
+    <div id="insurance-schemes" class="scheme-tabs" style="display:none;">
+      <div class="grid-2">
+        <div class="scheme-card"><div class="badge badge-blue" style="margin-bottom:8px;">Insurance</div><div class="scheme-name">PMFBY — Pradhan Mantri Fasal Bima Yojana</div><div class="scheme-desc">Kharif: 2% premium. Rabi: 1.5% premium. Annual commercial crops: 5%. Full coverage for yield loss, post-harvest, localised calamity.</div><div style="display:flex;gap:8px;"><span class="badge badge-green">Min 2% premium</span><a class="scheme-link" href="https://pmfby.gov.in" target="_blank">→ pmfby.gov.in</a></div></div>
+        <div class="scheme-card"><div class="badge badge-amber" style="margin-bottom:8px;">Insurance</div><div class="scheme-name">Restructured Weather Based Crop Insurance</div><div class="scheme-desc">Coverage based on weather parameters — rainfall, temperature, humidity. Faster claims as based on weather station data, not yield.</div><div style="display:flex;gap:8px;"><span class="badge badge-blue">Auto-claims</span><a class="scheme-link" href="https://pmfby.gov.in" target="_blank">→ pmfby.gov.in</a></div></div>
+        <div class="scheme-card"><div class="badge badge-green" style="margin-bottom:8px;">Insurance</div><div class="scheme-name">National Agricultural Insurance Scheme</div><div class="scheme-desc">Comprehensive risk coverage against crop failure due to natural calamities. All farmers including sharecroppers and tenant farmers covered.</div><div style="display:flex;gap:8px;"><span class="badge badge-green">All farmers</span></div></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ========================
+// TRANSLATIONS
+// ========================
+const T = {
+  en: {
+    nav_weather:'Weather', nav_chat:'Krishi Chat AI', nav_detect:'Crop & Weed Detection',
+    nav_crop:'Crop Recommendation', nav_fert:'Fertilizer & Pesticide', nav_soil:'Soil Health Analyzer', nav_schemes:'Govt. Schemes',
+    app_title:'AgroVision — Smart Farming Platform',
+    weather_title:'Live Weather Conditions', forecast:'7-Day Forecast', humidity:'Humidity', wind:'Wind', visibility:'Visibility',
+    agri_advisory:'Agricultural Advisory', air_quality:'Air Quality & UV', pressure:'Pressure', dew:'Dew Point', hourly:'Today\'s Hourly',
+    chat_title:'Krishi Chat AI', chat_sub:'Your personal farming assistant — ask anything',
+    quick_q:'Quick Questions', voice_langs:'Supported Voice Languages',
+    detect_title:'Crop & Weed Detection', detect_sub:'Upload image or camera to detect crops, weeds & diseases',
+    detect_result:'Detection Results', detect_info:'Detection Capabilities',
+    crop_title:'Crop Recommendation', crop_sub:'Best crops based on soil, weather & location',
+    location_params:'Location-Based Parameters', soil_params:'Soil Parameters', crop_result:'Recommended Crops', city_suggestions:'Indian Regions',
+    fert_title:'Fertilizer & Pesticide', fert_sub:'Optimal inputs for your crop', crop_details:'Crop Details', fert_result:'Recommendations',
+    soil_title:'Soil Health Analyzer', soil_sub:'Analyze your soil quality', soil_inputs:'Enter Soil Parameters', soil_result:'Soil Health Report',
+    schemes_title:'Government Schemes', schemes_sub:'Central & state government benefits'
+  },
+  hi: {
+    nav_weather:'मौसम', nav_chat:'कृषि चैट AI', nav_detect:'फसल और खरपतवार',
+    nav_crop:'फसल सिफारिश', nav_fert:'उर्वरक और कीटनाशक', nav_soil:'मिट्टी स्वास्थ्य', nav_schemes:'सरकारी योजनाएं',
+    app_title:'एग्रोविज़न — स्मार्ट खेती प्लेटफॉर्म',
+    weather_title:'लाइव मौसम', forecast:'7 दिन का पूर्वानुमान', humidity:'आर्द्रता', wind:'हवा', visibility:'दृश्यता',
+    agri_advisory:'कृषि सलाह', air_quality:'वायु गुणवत्ता', pressure:'दबाव', dew:'ओस बिंदु', hourly:'आज का घंटेवार',
+    chat_title:'कृषि चैट AI', chat_sub:'आपका व्यक्तिगत कृषि सहायक',
+    quick_q:'त्वरित प्रश्न', voice_langs:'समर्थित भाषाएं',
+    detect_title:'फसल और खरपतवार पहचान', detect_sub:'छवि अपलोड करें या कैमरे का उपयोग करें',
+    detect_result:'पहचान परिणाम', detect_info:'पहचान क्षमताएं',
+    crop_title:'फसल सिफारिश', crop_sub:'मिट्टी और मौसम के आधार पर सर्वोत्तम फसल',
+    location_params:'स्थान आधारित पैरामीटर', soil_params:'मिट्टी के पैरामीटर', crop_result:'अनुशंसित फसलें', city_suggestions:'भारतीय क्षेत्र',
+    fert_title:'उर्वरक और कीटनाशक', fert_sub:'आपकी फसल के लिए सर्वोत्तम इनपुट', crop_details:'फसल विवरण', fert_result:'सिफारिशें',
+    soil_title:'मिट्टी स्वास्थ्य विश्लेषक', soil_sub:'मिट्टी की गुणवत्ता का विश्लेषण', soil_inputs:'मिट्टी पैरामीटर दर्ज करें', soil_result:'मिट्टी स्वास्थ्य रिपोर्ट',
+    schemes_title:'किसानों के लिए सरकारी योजनाएं', schemes_sub:'केंद्र और राज्य सरकार की योजनाएं'
+  },
+  mr: {
+    nav_weather:'हवामान', nav_chat:'कृषी चॅट AI', nav_detect:'पीक आणि तण',
+    nav_crop:'पीक शिफारस', nav_fert:'खत आणि कीटकनाशक', nav_soil:'माती आरोग्य', nav_schemes:'सरकारी योजना',
+    app_title:'एग्रोव्हिजन — स्मार्ट शेती प्लॅटफॉर्म',
+    weather_title:'थेट हवामान', forecast:'७ दिवसांचा अंदाज', humidity:'आर्द्रता', wind:'वारा', visibility:'दृश्यमानता',
+    chat_title:'कृषी चॅट AI', chat_sub:'तुमचा वैयक्तिक शेती सहाय्यक',
+    crop_title:'पीक शिफारस', schemes_title:'शेतकऱ्यांसाठी सरकारी योजना',
+    agri_advisory:'कृषी सल्ला', air_quality:'हवा गुणवत्ता', pressure:'दाब', dew:'दव बिंदू', hourly:'आजचा तासावार',
+    quick_q:'त्वरित प्रश्न', voice_langs:'समर्थित भाषा',
+    detect_title:'पीक आणि तण शोध', detect_sub:'प्रतिमा अपलोड करा',
+    detect_result:'शोध निकाल', detect_info:'शोध क्षमता',
+    crop_sub:'माती आणि हवामानावर आधारित सर्वोत्तम पीक',
+    location_params:'स्थान-आधारित मापदंड', soil_params:'माती मापदंड', crop_result:'शिफारस केलेली पिके', city_suggestions:'भारतीय प्रदेश',
+    fert_title:'खत आणि कीटकनाशक', fert_sub:'तुमच्या पिकासाठी सर्वोत्तम', crop_details:'पीक तपशील', fert_result:'शिफारसी',
+    soil_title:'माती आरोग्य विश्लेषक', soil_sub:'मातीची गुणवत्ता तपासा', soil_inputs:'माती मापदंड प्रविष्ट करा', soil_result:'माती आरोग्य अहवाल',
+    schemes_sub:'केंद्र आणि राज्य सरकारच्या योजना'
+  },
+  te: {
+    nav_weather:'వాతావరణం', nav_chat:'కృషి చాట్ AI', nav_detect:'పంట మరియు కలుపు',
+    nav_crop:'పంట సిఫారసు', nav_fert:'ఎరువులు మరియు పురుగుమందులు', nav_soil:'నేల ఆరోగ్యం', nav_schemes:'ప్రభుత్వ పథకాలు',
+    app_title:'అగ్రోవిజన్ — స్మార్ట్ ఫార్మింగ్',
+    weather_title:'లైవ్ వాతావరణం', forecast:'7 రోజుల అంచనా',
+    chat_title:'కృషి చాట్ AI', crop_title:'పంట సిఫారసు', schemes_title:'రైతులకు ప్రభుత్వ పథకాలు',
+    humidity:'తేమ', wind:'గాలి', agri_advisory:'వ్యవసాయ సలహా', air_quality:'గాలి నాణ్యత', pressure:'పీడనం', dew:'మంచు బిందువు', hourly:'నేటి గంటవారీ',
+    quick_q:'త్వరిత ప్రశ్నలు', voice_langs:'మద్దతు భాషలు',
+    detect_title:'పంట మరియు కలుపు గుర్తింపు', detect_sub:'చిత్రం అప్‌లోడ్ చేయండి',
+    detect_result:'గుర్తింపు ఫలితాలు', detect_info:'గుర్తింపు సామర్థ్యాలు',
+    visibility:'దృశ్యమానత', crop_sub:'నేల మరియు వాతావరణం ఆధారంగా',
+    location_params:'స్థాన ఆధారిత పారామితులు', soil_params:'నేల పారామితులు', crop_result:'సిఫారసు చేసిన పంటలు', city_suggestions:'భారతీయ ప్రాంతాలు',
+    fert_title:'ఎరువులు మరియు పురుగుమందులు', fert_sub:'మీ పంటకు సరైనవి', crop_details:'పంట వివరాలు', fert_result:'సిఫారసులు',
+    soil_title:'నేల ఆరోగ్య విశ్లేషకుడు', soil_sub:'నేల నాణ్యతను విశ్లేషించండి', soil_inputs:'నేల పారామితులు నమోదు చేయండి', soil_result:'నేల ఆరోగ్య నివేదిక',
+    schemes_sub:'కేంద్ర మరియు రాష్ట్ర ప్రభుత్వ పథకాలు'
+  },
+  ta: {
+    nav_weather:'வானிலை', nav_chat:'கிருஷி செட் AI', nav_detect:'பயிர் மற்றும் களை',
+    nav_crop:'பயிர் பரிந்துரை', nav_fert:'உரம் மற்றும் பூச்சிக்கொல்லி', nav_soil:'மண் ஆரோக்கியம்', nav_schemes:'அரசு திட்டங்கள்',
+    app_title:'அக்ரோவிஷன் — ஸ்மார்ட் பார்மிங்',
+    weather_title:'நேரடி வானிலை', forecast:'7 நாள் முன்னறிவிப்பு',
+    chat_title:'கிருஷி செட் AI', crop_title:'பயிர் பரிந்துரை', schemes_title:'விவசாயிகளுக்கு அரசு திட்டங்கள்',
+    humidity:'ஈரப்பதம்', wind:'காற்று', agri_advisory:'விவசாய ஆலோசனை', air_quality:'காற்று தரம்', pressure:'அழுத்தம்', dew:'பனி நிலை', hourly:'இன்று மணி நேரம்',
+    quick_q:'விரைவு கேள்விகள்', voice_langs:'ஆதரிக்கப்படும் மொழிகள்',
+    detect_title:'பயிர் மற்றும் களை கண்டறிதல்', detect_sub:'படம் பதிவேற்றவும்',
+    detect_result:'கண்டறிதல் முடிவுகள்', detect_info:'கண்டறிதல் திறன்கள்',
+    visibility:'தெரிவுநிலை', crop_sub:'மண் மற்றும் வானிலை அடிப்படையில்',
+    location_params:'இடம் சார்ந்த அளவுருக்கள்', soil_params:'மண் அளவுருக்கள்', crop_result:'பரிந்துரைக்கப்பட்ட பயிர்கள்', city_suggestions:'இந்திய பகுதிகள்',
+    fert_title:'உரம் மற்றும் பூச்சிக்கொல்லி', fert_sub:'உங்கள் பயிருக்கு சரியானது', crop_details:'பயிர் விவரங்கள்', fert_result:'பரிந்துரைகள்',
+    soil_title:'மண் ஆரோக்கிய ஆய்வாளர்', soil_sub:'மண் தரத்தை பகுப்பாய்வு செய்யுங்கள்', soil_inputs:'மண் அளவுருக்களை உள்ளிடவும்', soil_result:'மண் ஆரோக்கிய அறிக்கை',
+    schemes_sub:'மத்திய மற்றும் மாநில அரசு திட்டங்கள்'
+  },
+  kn: {
+    nav_weather:'ಹವಾಮಾನ', nav_chat:'ಕೃಷಿ ಚಾಟ್ AI', nav_detect:'ಬೆಳೆ ಮತ್ತು ಕಳೆ',
+    nav_crop:'ಬೆಳೆ ಶಿಫಾರಸು', nav_fert:'ಗೊಬ್ಬರ ಮತ್ತು ಕೀಟನಾಶಕ', nav_soil:'ಮಣ್ಣು ಆರೋಗ್ಯ', nav_schemes:'ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು',
+    app_title:'ಅಗ್ರೋವಿಷನ್ — ಸ್ಮಾರ್ಟ್ ಫಾರ್ಮಿಂಗ್',
+    weather_title:'ಲೈವ್ ಹವಾಮಾನ', forecast:'7 ದಿನದ ಮುನ್ಸೂಚನೆ',
+    chat_title:'ಕೃಷಿ ಚಾಟ್ AI', crop_title:'ಬೆಳೆ ಶಿಫಾರಸು', schemes_title:'ರೈತರಿಗೆ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು',
+    humidity:'ಆರ್ದ್ರತೆ', wind:'ಗಾಳಿ', agri_advisory:'ಕೃಷಿ ಸಲಹೆ', air_quality:'ಗಾಳಿ ಗುಣಮಟ್ಟ', pressure:'ಒತ್ತಡ', dew:'ಇಬ್ಬನಿ', hourly:'ಇಂದಿನ ಗಂಟೆ',
+    quick_q:'ತ್ವರಿತ ಪ್ರಶ್ನೆಗಳು', voice_langs:'ಬೆಂಬಲಿತ ಭಾಷೆಗಳು',
+    detect_title:'ಬೆಳೆ ಮತ್ತು ಕಳೆ ಪತ್ತೆ', detect_sub:'ಚಿತ್ರ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ',
+    detect_result:'ಪತ್ತೆ ಫಲಿತಾಂಶಗಳು', detect_info:'ಪತ್ತೆ ಸಾಮರ್ಥ್ಯಗಳು',
+    visibility:'ದೃಶ್ಯಮಾನ', crop_sub:'ಮಣ್ಣು ಮತ್ತು ಹವಾಮಾನದ ಆಧಾರದ ಮೇಲೆ',
+    location_params:'ಸ್ಥಳ ಆಧಾರಿತ ನಿಯತಾಂಕಗಳು', soil_params:'ಮಣ್ಣಿನ ನಿಯತಾಂಕಗಳು', crop_result:'ಶಿಫಾರಸು ಮಾಡಿದ ಬೆಳೆಗಳು', city_suggestions:'ಭಾರತೀಯ ಪ್ರದೇಶಗಳು',
+    fert_title:'ಗೊಬ್ಬರ ಮತ್ತು ಕೀಟನಾಶಕ', fert_sub:'ನಿಮ್ಮ ಬೆಳೆಗೆ ಸೂಕ್ತ', crop_details:'ಬೆಳೆ ವಿವರಗಳು', fert_result:'ಶಿಫಾರಸುಗಳು',
+    soil_title:'ಮಣ್ಣು ಆರೋಗ್ಯ ವಿಶ್ಲೇಷಕ', soil_sub:'ಮಣ್ಣಿನ ಗುಣಮಟ್ಟ ವಿಶ್ಲೇಷಿಸಿ', soil_inputs:'ಮಣ್ಣು ನಿಯತಾಂಕಗಳನ್ನು ನಮೂದಿಸಿ', soil_result:'ಮಣ್ಣು ಆರೋಗ್ಯ ವರದಿ',
+    schemes_sub:'ಕೇಂದ್ರ ಮತ್ತು ರಾಜ್ಯ ಸರ್ಕಾರ ಯೋಜನೆಗಳು'
+  }
+};
+
+let currentLang = 'en';
+function setLanguage(lang) {
+  currentLang = lang;
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const key = el.getAttribute('data-key');
+    if (T[lang] && T[lang][key]) el.textContent = T[lang][key];
+    else if (T.en[key]) el.textContent = T.en[key];
+  });
+  document.getElementById('langSelect').value = lang;
+  document.getElementById('chatLang').value = lang;
+  const welcomes = {
+    en:'🌿 Namaste! I am Krishi AI. Ask me about crops, soil, weather, fertilizers, or government schemes in any Indian language!',
+    hi:'🌿 नमस्ते! मैं कृषि AI हूं। फसलों, मिट्टी, मौसम, उर्वरकों या सरकारी योजनाओं के बारे में पूछें!',
+    mr:'🌿 नमस्कार! मी कृषी AI आहे. पिके, माती, हवामान, खते किंवा सरकारी योजनांबद्दल विचारा!',
+    te:'🌿 నమస్కారం! నేను కృషి AI. పంటలు, నేల, వాతావరణం గురించి అడగండి!',
+    ta:'🌿 வணக்கம்! நான் கிருஷி AI. பயிர்கள், மண், வானிலை பற்றி கேளுங்கள்!',
+    kn:'🌿 ನಮಸ್ಕಾರ! ನಾನು ಕೃಷಿ AI. ಬೆಳೆಗಳು, ಮಣ್ಣು, ಹವಾಮಾನ ಬಗ್ಗೆ ಕೇಳಿ!'
+  };
+  document.getElementById('botWelcome').textContent = welcomes[lang] || welcomes.en;
+}
+
+// ========================
+// CLOCK
+// ========================
+function updateClock() {
+  const now = new Date();
+  const opts = {weekday:'short',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'};
+  document.getElementById('clockEl').textContent = now.toLocaleString('en-IN', opts);
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ========================
+// NAVIGATION
+// ========================
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  const navItems = document.querySelectorAll('.nav-item');
+  const map = {weather:0,chat:1,detection:2,crop:3,fertilizer:4,soil:5,schemes:6};
+  if (map[name] !== undefined) navItems[map[name]].classList.add('active');
+  const titles = {weather:'Weather',chat:'Krishi Chat AI',detection:'Crop & Weed Detection',crop:'Crop Recommendation',fertilizer:'Fertilizer & Pesticide',soil:'Soil Health Analyzer',schemes:'Government Schemes'};
+  document.querySelector('.topbar-title').textContent = T[currentLang]['app_title'] || 'AgroVision';
+}
+
+// ========================
+// TABS
+// ========================
+function setTab(el, targetId, groupClass) {
+  document.querySelectorAll('.'+groupClass).forEach(t => t.style.display='none');
+  document.getElementById(targetId).style.display = '';
+  el.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ========================
+// WEATHER
+// ========================
+const OW_KEY = 'demo'; // Using Open-Meteo (free, no key)
+const weatherIcons = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'❄️',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'⛈',85:'❄️',86:'❄️',95:'⛈',96:'⛈',99:'⛈'};
+const weatherDesc = {0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Icy fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Rain showers',82:'Heavy showers',95:'Thunderstorm',96:'Thunderstorm+hail',99:'Heavy thunderstorm'};
+
+let lastLat = 18.5204, lastLon = 73.8567;
+let currentCity = 'Pune, MH';
+
+async function fetchWeatherByCoords(lat, lon, cityName) {
+  lastLat = lat; lastLon = lon;
+  currentCity = cityName;
+  document.getElementById('currentCity').textContent = cityName;
+  document.getElementById('weatherCity').textContent = cityName;
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,visibility,surface_pressure,dew_point_2m,uv_index&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia/Kolkata&forecast_days=7`;
+    const res = await fetch(url);
+    const d = await res.json();
+    const c = d.current;
+
+    document.getElementById('tempEl').textContent = Math.round(c.temperature_2m) + '°C';
+    document.getElementById('humidEl').textContent = c.relative_humidity_2m + '%';
+    document.getElementById('windEl').textContent = Math.round(c.wind_speed_10m) + ' km/h';
+    document.getElementById('visEl').textContent = c.visibility ? Math.round(c.visibility/1000)+'km' : '—';
+    document.getElementById('feelEl').textContent = 'Feels like ' + Math.round(c.apparent_temperature) + '°C';
+    document.getElementById('descEl').textContent = weatherDesc[c.weather_code] || 'Clear';
+    document.getElementById('weatherIcon').textContent = weatherIcons[c.weather_code] || '🌤';
+    document.getElementById('uvEl').textContent = c.uv_index ?? '—';
+    document.getElementById('pressEl').textContent = Math.round(c.surface_pressure) + ' hPa';
+    document.getElementById('dewEl').textContent = Math.round(c.dew_point_2m) + '°C';
+    document.getElementById('weatherDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+
+    // Advisory
+    const temp = c.temperature_2m, humid = c.relative_humidity_2m, uv = c.uv_index||0;
+    let adv = '';
+    if (temp > 35) adv += '🌡️ High temperature alert — irrigate crops early morning or late evening.<br/>';
+    if (temp < 15) adv += '❄️ Cool conditions — suitable for Rabi crops. Protect tender seedlings.<br/>';
+    if (humid > 80) adv += '💧 High humidity — risk of fungal diseases. Ensure proper ventilation.<br/>';
+    if (humid < 40) adv += '🏜️ Low humidity — increase irrigation frequency.<br/>';
+    if (uv > 6) adv += '☀️ High UV index — field work best before 9AM or after 4PM.<br/>';
+    const code = c.weather_code;
+    if (code >= 61 && code <= 82) adv += '🌧️ Rain expected — delay spraying fertilizers/pesticides.<br/>';
+    if (!adv) adv = '✅ Weather conditions are good for regular farming activities today.';
+    document.getElementById('agriAdvisory').innerHTML = adv;
+
+    // Forecast
+    const daily = d.daily;
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    let fcHtml = '';
+    for (let i=0;i<7;i++) {
+      const date = new Date(daily.time[i]);
+      fcHtml += `<div class="forecast-day">
+        <div class="day">${i===0?'Today':days[date.getDay()]}</div>
+        <div class="icon">${weatherIcons[daily.weather_code[i]]||'🌤'}</div>
+        <div class="hi">${Math.round(daily.temperature_2m_max[i])}°</div>
+        <div class="lo">${Math.round(daily.temperature_2m_min[i])}°</div>
+        <div class="rain">💧${daily.precipitation_probability_max[i]}%</div>
+      </div>`;
+    }
+    document.getElementById('forecastRow').innerHTML = fcHtml;
+
+    // Hourly (next 12 hours)
+    const hourly = d.hourly;
+    const nowH = new Date().getHours();
+    let hourHtml = '';
+    for (let i=nowH;i<Math.min(nowH+12, 24);i++) {
+      hourHtml += `<div style="min-width:60px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center;flex-shrink:0;">
+        <div style="font-size:11px;color:var(--text3);">${i}:00</div>
+        <div style="font-size:18px;margin:4px 0;">${weatherIcons[hourly.weather_code[i]]||'🌤'}</div>
+        <div style="font-size:13px;color:var(--text);font-weight:500;">${Math.round(hourly.temperature_2m[i])}°</div>
+      </div>`;
+    }
+    document.getElementById('hourlyRow').innerHTML = hourHtml;
+
+    // Update crop params
+    document.getElementById('paramTemp').value = Math.round(c.temperature_2m);
+    document.getElementById('paramHumid').value = c.relative_humidity_2m;
+
+  } catch(e) {
+    document.getElementById('descEl').textContent = 'Weather data unavailable';
+    console.error(e);
+  }
+}
+
+async function fetchWeather() {
+  const city = document.getElementById('cityInput').value.trim() || 'Pune';
+  try {
+    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&country=IN`);
+    const data = await res.json();
+    if (data.results && data.results[0]) {
+      const r = data.results[0];
+      fetchWeatherByCoords(r.latitude, r.longitude, r.name + (r.admin1 ? ', '+r.admin1.substring(0,2) : ''));
+    } else {
+      fetchWeatherByCoords(18.5204, 73.8567, city+', IN');
+    }
+  } catch(e) { fetchWeatherByCoords(18.5204, 73.8567, city); }
+}
+
+function useCurrentLocationWeather() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude, 'Your Location');
+    }, () => fetchWeatherByCoords(18.5204,73.8567,'Pune, MH'));
+  }
+}
+
+// Initial load
+fetchWeatherByCoords(18.5204, 73.8567, 'Pune, MH');
+
+// ========================
+// GEMINI API KEY — paste your key from aistudio.google.com/app/apikey
+// ========================
+const GEMINI_API_KEY = 'AIzaSyCdS5PfZwBpvv6jfcIVXVDvfCcZs-SSmZk';
+
+// ========================
+// CHAT AI
+// ========================
+const chatKnowledge = {
+  wheat:["Wheat grows best in pH 6.0-7.0 with well-drained loam soil.","NPK for wheat: 120:60:40 kg/ha. Split urea application in 3 doses.","Yellow rust in wheat — spray propiconazole 25EC at 0.1%."],
+  rice:["Rice requires 4-6 inches standing water in initial growth. Transplanting spacing: 20x15cm.","Blast disease in rice: spray tricyclazole or isoprothiolane.","N:P:K for rice = 100:50:50 kg/ha. Split N in 3 doses."],
+  tomato:["Tomato pH: 6.0-6.8. High potassium improves fruit quality and disease resistance.","Early blight on tomato: spray mancozeb 75WP at 2.5g/L water.","Drip irrigation + mulching increases tomato yield by 30-40%."],
+  fertilizer:["DAP contains 18% N + 46% P. Best applied as basal before sowing.","Urea = 46% N. Apply in 3 splits — basal, tillering, panicle initiation.","Organic manure improves soil structure and water holding capacity."],
+  soil:["Black cotton soil (Vertisol) — high clay, good for cotton, soybean, sorghum.","Sandy soil needs frequent light irrigation and split fertilizer applications.","Acidic soil (pH<6) — apply lime @ 2-3 tonnes/ha to correct pH."],
+  weather:["Current conditions loaded from live API. Always check 7-day forecast before spraying.","Spray pesticides in early morning (6-9AM) or late evening for best effectiveness.","Heavy rain within 6 hours of spraying will wash off applied chemicals."],
+  schemes:["PM-KISAN gives ₹6000/year directly to farmer bank accounts in 3 installments.","PMFBY crop insurance: Kharif premium 2%, Rabi 1.5%, maximum coverage.","Soil Health Card scheme provides free soil testing every 2 years."],
+  cotton:["Cotton needs deep black soil with pH 6-8. Excellent Bt cotton varieties for Maharashtra.","Cotton bollworm: use spinosad or emamectin benzoate. Follow IPM principles.","NK fertilizer is critical for cotton boll development. Apply K before flowering."],
+  sugarcane:["Sugarcane ratoon management: apply 150:50:100 NPK after ratooning.","Red rot in sugarcane: destroy infected stools. Plant disease-free setts.","Pune-Nashik belt is ideal for sugarcane with black soil and moderate rainfall."],
+  mango:["Mango requires dry weather during flowering. Malformation disease: prune and spray NAA.","Alternate bearing in mango — apply paclobutrazol soil drench to regulate.","Alphonso mango best grown in Konkan (Ratnagiri, Sindhudurg) coastal belt."],
+  default:["I can help with crop selection, disease identification, fertilizer dosage, weather interpretation, and government schemes. What specific farming question do you have?","For best results, share your location, soil type and crop name for personalized advice.","You can also use the Crop Recommendation tab to get AI-powered suggestions based on soil parameters!"]
+};
+
+const chatHistory = [];
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  addMsg(msg, 'user');
+  chatHistory.push({role:'user',content:msg});
+
+  const thinking = addMsg('...', 'bot', true);
+
+  try {
+    const lang = document.getElementById('chatLang').value;
+    const langInstructions = {
+      en:'Respond in English.',
+      hi:'हिंदी में जवाब दें। Crop/chemical names in English are fine.',
+      mr:'मराठीत उत्तर द्या। Crop/chemical names in English are fine.',
+      te:'తెలుగులో సమాధానం ఇవ్వండి.',
+      ta:'தமிழில் பதில் கொடுங்கள்.',
+      kn:'ಕನ್ನಡದಲ್ಲಿ ಉತ್ತರಿಸಿ.'
+    };
+    const systemText = `You are Krishi Mitra, an expert Indian agricultural assistant for AgroVision. You specialize in Indian farming: crop diseases, fertilizer recommendations, soil health, weather impact on crops, government schemes (PM-KISAN, PMFBY, Soil Health Card, e-NAM, KCC etc.), and regional farming knowledge for Maharashtra, UP, Punjab, AP, TN, Karnataka and all Indian states. You can also answer general questions. Be friendly, practical and give actionable advice. ${langInstructions[lang]||langInstructions.en} Keep responses concise and clear. Use emojis sparingly.`;
+
+    // Build Gemini contents array from chat history
+    const contents = [];
+    chatHistory.slice(-10).forEach(m => {
+      contents.push({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] });
+    });
+    // Add current message
+    contents.push({ role: 'user', parts: [{ text: msg }] });
+
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemText }] },
+        contents: contents,
+        generationConfig: { maxOutputTokens: 800, temperature: 0.7 }
+      })
+    });
+
+    const data = await res.json();
+
+    // Handle Gemini API key error gracefully
+    if (data.error) {
+      if (data.error.status === 'INVALID_ARGUMENT' || data.error.message?.includes('API key')) {
+        thinking.textContent = '⚠️ Gemini API key not set. Open index.html and replace PASTE_YOUR_GEMINI_KEY_HERE with your key from aistudio.google.com/app/apikey';
+      } else {
+        thinking.textContent = getFallbackReply(msg);
+      }
+      return;
+    }
+
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || getFallbackReply(msg);
+    thinking.textContent = reply;
+    chatHistory.push({role:'assistant', content: reply});
+  } catch(e) {
+    thinking.textContent = getFallbackReply(msg);
+  }
+  scrollChat();
+}
+
+function getFallbackReply(msg) {
+  const m = msg.toLowerCase();
+  // Extended keyword matching
+  const extKnowledge = {
+    // Rare diseases
+    'rare disease':['🌿 Citrus Greening (Huanglongbing) — caused by Candidatus Liberibacter, spread by Asian citrus psyllid. No cure exists; remove infected trees immediately. Devastating in citrus orchards.','🌿 Karnal Bunt (Tilletia indica) — partial bunt of wheat grains. Quarantine pest in India. Causes fishy odor. Treat seed with carboxin + thiram before sowing.','🌿 Banana Xanthomonas Wilt (BXW) — bacterial disease with no chemical cure. Remove and destroy infected plants. Use disease-free suckers only.','🌿 Phytoplasma diseases (Big Bud in tomato, Little Leaf in brinjal) — spread by leafhoppers. No direct cure; control vector with imidacloprid, remove infected plants.'],
+    'banana':['🌿 Banana Fusarium Wilt (Panama disease) TR4 — most destructive banana disease globally. No fungicide works. Plant resistant Cavendish or FHIA varieties. Once in soil, persists 30+ years.','🌿 Banana grows well in deep, well-drained loamy soil with pH 6-7.5. Needs 1200-2500mm rainfall or equivalent irrigation. NPK: 200:60:220 kg/ha.'],
+    'river':['🌿 Crops suited near rivers: Banana, Sugarcane, Paddy, Vegetables (bottle gourd, bitter gourd), Jute, Taro, Water chestnut. Alluvial floodplain soil is highly fertile — great for high-value vegetables and paddy.','🌿 Near rivers: use raised bed farming to avoid waterlogging. Rice, Sugarcane, Banana, Coconut, Vegetables thrive. Avoid low-lying areas prone to flooding for root crops like potato.'],
+    'flood':['🌿 Flood-tolerant crops: Swarna Sub1 rice (tolerates 2 weeks submergence), Jute, Lotus, Taro, Water spinach. Raise nursery beds. Drain fields within 3 days of flood recession.','🌿 After flooding: apply 10 kg/ha Zinc Sulphate + FYM 5t/ha. Check soil salinity. Replant with short-duration varieties. Wait 5-7 days before applying fertilizer.'],
+    'drought':['🌿 Drought-tolerant crops: Sorghum (Jowar), Pearl millet (Bajra), Moth bean, Cluster bean (Guar), Castor, Sesame, Chickpea. These can survive on 300-500mm rainfall.','🌿 In drought conditions: use drip irrigation, mulching, contour bunding. Apply potassium to improve drought tolerance. Try SRI method for rice — saves 40% water.'],
+    'organic':['🌿 Organic farming basics: use FYM 10t/ha, vermicompost 5t/ha, neem cake 200kg/ha. Biofertilizers — Rhizobium for legumes, Azospirillum for cereals, PSB for P solubilization.','🌿 Organic pest control: neem oil 3ml/L for sucking pests, Beauveria bassiana for caterpillars, Trichoderma for soil pathogens, yellow sticky traps for whitefly/aphids.'],
+    'pest':['🌿 Integrated Pest Management (IPM): Monitor weekly using pheromone traps. Economic threshold before spraying. Use resistant varieties, biocontrol agents, then chemical as last resort.','🌿 Common pests: Aphids → imidacloprid 0.3ml/L. Thrips → spinosad 0.5ml/L. Armyworm → chlorpyrifos 2ml/L. Mites → abamectin or spiromesifen.'],
+    'disease':['🌿 Common crop diseases: Powdery mildew → sulfur 2g/L. Late blight → metalaxyl 2g/L. Bacterial wilt → no cure, use resistant varieties, copper spray. Rust → propiconazole 1ml/L.','🌿 Disease triangle: Susceptible host + Virulent pathogen + Favorable environment = Disease. Remove affected plant material, improve drainage, avoid overhead irrigation to prevent spread.'],
+    'drip':['🌿 Drip irrigation saves 30-50% water vs flood irrigation. Recommended spacing: 20-30cm emitters for vegetables, 50-60cm for cotton/sugarcane. Government subsidy up to 90% for small farmers under PMKSY.','🌿 Drip + fertigation: dissolve water-soluble fertilizers (KNO3, MAP, MKP) and inject through drip system. Saves 30% fertilizer, improves yield by 25-40%.'],
+    'seeds':['🌿 Seed treatment before sowing: Thiram+Carbendazim 2g/kg for fungal protection. Imidacloprid 5ml/kg for early insect protection. Rhizobium/Azospirillum inoculant for biofertilizer benefit.','🌿 Certified seeds give 15-25% higher yield than farm-saved seeds. Use seeds from NSC, state seed corporations, or reputed private companies. Check germination rate before sowing (should be >85%).'],
+    'irrigation':['🌿 Irrigation scheduling: irrigate at 50% soil moisture depletion for most crops. Critical stages: wheat — crown root initiation, jointing; rice — transplanting, heading; maize — tasseling, silking.','🌿 Water requirements: Rice 1200-2000mm, Wheat 400-500mm, Maize 500-700mm, Cotton 700-1200mm, Sugarcane 1500-2500mm. Monitor soil moisture with tensiometer for precision.'],
+    'compost':['🌿 Composting: layer green waste + brown waste + FYM in 1:1:0.1 ratio. Keep moist, turn every 2 weeks. Ready in 60-90 days. Excellent for improving soil organic matter and microbial life.','🌿 Vermicompost vs FYM: vermicompost is 3-5x richer in NPK, ready faster (45-60 days), improves soil structure dramatically. Apply 3-5 t/ha as basal for best results.'],
+    'rabi':['🌿 Rabi crops (Nov-Mar): Wheat, Mustard, Chickpea, Lentil, Barley, Coriander, Fenugreek, Peas. Sown after Kharif harvest. Need cool weather and low rainfall. Irrigation critical at crown root stage.','🌿 Best Rabi crops for North India: Wheat (HD-2967, DBW-222), Mustard (Pusa Bold), Chickpea (JG-11), Potato. For South India: Sunflower, Groundnut, Vegetables.'],
+    'kharif':['🌿 Kharif crops (Jun-Oct): Rice, Maize, Cotton, Soybean, Sugarcane, Groundnut, Mung bean, Urad, Jowar, Bajra. Sown at monsoon onset. Depend on rainfall or monsoon.','🌿 Best Kharif crops: Soybean (Maharashtra), Cotton (Vidarbha), Rice (Konkan, Bengal, AP), Groundnut (Gujarat), Maize (Karnataka, Bihar).'],
+    'ph':['🌿 Soil pH chart: Below 5.5 = very acidic → lime. 5.5-6.5 = slightly acidic → suitable for rice, potato, maize. 6.5-7.5 = neutral → ideal for most crops. Above 8 = alkaline → add gypsum/sulfur.','🌿 Quick pH fix: acidic soil → Agricultural lime 2-4 t/ha. Alkaline soil → Gypsum 500kg/ha + Sulfur 100kg/ha. Organic matter addition helps buffer pH naturally.'],
+    'government':['🌿 Key farmer schemes 2025: PM-KISAN ₹6000/yr, PMFBY crop insurance, Soil Health Card, PM-KUSUM solar pump, e-NAM digital mandi, KCC (Kisan Credit Card) at 4% interest.','🌿 Kisan Credit Card: get up to ₹3 lakh crop loan at 4% interest per year (government subsidized). Apply at any nationalized bank with land records and Aadhaar.'],
+    'loan':['🌿 Kisan Credit Card (KCC) provides crop loans up to ₹3 lakh at 4% annual interest (2% subvention + 2% prompt repayment rebate). Apply at nearest bank with land records.','🌿 NABARD refinance supports rural credit. PM-KISAN ₹6000/year direct transfer. State governments also offer 0% interest crop loans in many states.'],
+    'mulch':['🌿 Mulching benefits: reduces evaporation by 30-40%, controls weeds, regulates soil temperature, improves organic matter. Use straw, dry leaves, black plastic. Apply 5-10cm thick layer.'],
+    'intercrop':['🌿 Intercropping systems: Sugarcane + Onion, Cotton + Moong, Maize + Cowpea, Sorghum + Pigeonpea (Arhar). Benefits: better land use, extra income, pest control, soil improvement.'],
+    'coconut':['🌿 Coconut grows best in coastal sandy loam, pH 5.5-8. Needs 1500-2500mm rainfall, min temp 20°C. NPK: 0.5:0.3:1 kg/palm/year. Rhinoceros beetle — apply carbaryl in crown.'],
+    'turmeric':['🌿 Turmeric: well-drained loam, pH 6-7.5, 1500mm rain. Rhizome rot (Pythium) — drench with metalaxyl. Harvest at 8-9 months. Yield 20-25 t/ha fresh rhizomes.'],
+    'chilli':['🌿 Chilli needs loamy soil, pH 6-7. NPK 120:60:60 kg/ha. Thrips and mites are major pests — use spinosad + abamectin alternately. Colletotrichum anthracnose on fruits — spray mancozeb.'],
+    'garlic':['🌿 Garlic: well-drained sandy loam, pH 6-7. Clove planting Oct-Nov. NPK: 100:50:50 kg/ha. Purple blotch (Alternaria) — spray mancozeb 2.5g/L + sticker. Harvest when 50% leaves dry.'],
+    'bajra':['🌿 Pearl millet (Bajra): drought-tolerant, sandy soils, pH 6-8. Only 250-500mm rain needed. NPK 80:40:40. Downy mildew — seed treat with metalaxyl. Excellent for arid Rajasthan, Maharashtra.'],
+    'jowar':['🌿 Sorghum (Jowar): dryland crop, pH 6.5-7.5, 400-600mm rain. NPK 90:40:40. Shoot fly — seed treat with imidacloprid. Charcoal rot in dry conditions — avoid moisture stress.'],
+    'arhar':['🌿 Pigeonpea (Arhar/Tur): deep black soil, pH 6.5-7.5, 600-1000mm rain. Fusarium wilt — use resistant varieties (ICPL-87119). Helicoverpa — spray indoxacarb 1.5ml/L. Harvest 150-180 days.'],
+    'lemon':['🌿 Lemon/Citrus: well-drained loamy soil, pH 6-7.5. NPK 500:250:500 g/tree/year. Citrus canker (Xanthomonas) — spray copper oxychloride 3g/L. Psyllid control — imidacloprid for greening prevention.'],
+    'papaya':['🌿 Papaya: well-drained, pH 6-6.5. Intolerant of waterlogging. Papaya ringspot virus — control aphid vector with reflective mulch + imidacloprid. NPK: 200:200:250 g/plant/year.'],
+  };
+
+  for (const [key, replies] of Object.entries(extKnowledge)) {
+    if (m.includes(key)) return '🌿 ' + replies[Math.floor(Math.random()*replies.length)];
+  }
+  for (const [key, replies] of Object.entries(chatKnowledge)) {
+    if (m.includes(key)) return '🌿 ' + replies[Math.floor(Math.random()*replies.length)];
+  }
+  // Generic smart fallback — never return the old default
+  const smartFallbacks = [
+    `For "${msg.substring(0,40)}..." — In Indian agriculture, always consider local soil type, rainfall, and season before deciding. Could you tell me your location/state and specific crop you're asking about? That will help me give you exact advice.`,
+    `Good question! Regarding "${msg.substring(0,30)}..." — Indian farming varies greatly by region. Share your district/state and current crop/season for precise recommendations on fertilizers, diseases, or crop choice.`,
+    `Regarding your question — this depends on your agro-climatic zone. Maharashtra, UP, Punjab, Karnataka, TN all have different recommendations. Which state/crop are you working with? I'll give you specific actionable advice.`
+  ];
+  return '🌿 ' + smartFallbacks[Math.floor(Math.random()*smartFallbacks.length)];
+}
+
+function addMsg(text, type, temporary=false) {
+  const area = document.getElementById('chatArea');
+  const div = document.createElement('div');
+  div.className = 'msg ' + type;
+  div.textContent = text;
+  area.appendChild(div);
+  // Add feedback row for bot messages (not temporary "..." ones)
+  if (type === 'bot' && !temporary) {
+    const fbRow = document.createElement('div');
+    fbRow.style.cssText = 'display:flex;gap:6px;align-items:center;padding:2px 0 4px 2px;';
+    fbRow.innerHTML = `
+      <span style="font-size:10px;color:var(--text3);">Helpful?</span>
+      <button class="fb-btn" style="padding:2px 8px;font-size:12px;" onclick="submitChatFeedback('up',this)">👍</button>
+      <button class="fb-btn" style="padding:2px 8px;font-size:12px;" onclick="submitChatFeedback('down',this)">👎</button>
+    `;
+    area.appendChild(fbRow);
+  }
+  scrollChat();
+  return div;
+}
+
+function submitChatFeedback(vote, btn) {
+  const fb = loadFeedback();
+  if (!fb.chat) fb.chat = {up:0,neutral:0,down:0,history:[]};
+  fb.chat[vote]++;
+  fb.chat.history.push({vote, timestamp: new Date().toISOString()});
+  saveFeedback(fb);
+  btn.parentElement.querySelectorAll('.fb-btn').forEach(b => { b.disabled=true; b.style.opacity='0.4'; });
+  btn.style.opacity = '1';
+  btn.classList.add(vote==='up'?'voted-up':'voted-down');
+  showToast(vote==='up' ? '👍 Thanks! Helps Krishi AI improve.' : '👎 Got it — we\'ll improve this answer.');
+  updateSidebarStats();
+}
+
+function scrollChat() {
+  const area = document.getElementById('chatArea');
+  area.scrollTop = area.scrollHeight;
+}
+
+function quickAsk(q) {
+  document.getElementById('chatInput').value = q;
+  sendChat();
+  showSection('chat');
+}
+
+// ========================
+// VOICE INPUT
+// ========================
+let recognition = null, isRecording = false;
+function toggleMic() {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    document.getElementById('micStatus').textContent = 'Voice not supported in this browser. Try Chrome.';
+    return;
+  }
+  if (isRecording) {
+    recognition && recognition.stop();
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    document.getElementById('micBtn').textContent = '🎤';
+    document.getElementById('micStatus').textContent = '';
+    return;
+  }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  const langMap = {en:'en-IN',hi:'hi-IN',mr:'mr-IN',te:'te-IN',ta:'ta-IN',kn:'kn-IN'};
+  recognition.lang = langMap[document.getElementById('chatLang').value] || 'en-IN';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.onresult = e => {
+    const text = e.results[0][0].transcript;
+    document.getElementById('chatInput').value = text;
+    document.getElementById('micStatus').textContent = '✅ Got: ' + text;
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    document.getElementById('micBtn').textContent = '🎤';
+  };
+  recognition.onerror = () => {
+    document.getElementById('micStatus').textContent = 'Voice error. Try again.';
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    document.getElementById('micBtn').textContent = '🎤';
+  };
+  recognition.onend = () => {
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    document.getElementById('micBtn').textContent = '🎤';
+  };
+  recognition.start();
+  isRecording = true;
+  document.getElementById('micBtn').classList.add('recording');
+  document.getElementById('micBtn').textContent = '🔴';
+  document.getElementById('micStatus').textContent = 'Listening...';
+}
+
+// ========================
+// DETECTION
+// ========================
+const cropDiseases = [
+  {name:'Tomato Late Blight',type:'disease',conf:94,treatment:'Apply chlorothalonil or copper hydroxide. Remove affected leaves. Improve drainage.',severity:'High'},
+  {name:'Wheat Leaf Rust',type:'disease',conf:88,treatment:'Spray propiconazole 25EC @ 0.1%. Apply early for best control.',severity:'Medium'},
+  {name:'Rice Blast',type:'disease',conf:91,treatment:'Apply tricyclazole 75WP @ 0.6g/L. Drain fields periodically.',severity:'High'},
+  {name:'Powdery Mildew',type:'disease',conf:86,treatment:'Spray sulfur 80WP @ 2g/L or triadimefon @ 0.5g/L.',severity:'Low'},
+  {name:'Alternaria Blight (Potato)',type:'disease',conf:89,treatment:'Mancozeb 75WP @ 2.5g/L. 3-4 sprays at 10-day intervals.',severity:'Medium'},
+  {name:'Cotton Bollworm',type:'disease',conf:87,treatment:'Spinosad 45SC @ 0.5ml/L or indoxacarb 1.5ml/L. Monitor with pheromone traps.',severity:'High'},
+  {name:'Citrus Canker (Xanthomonas)',type:'disease',conf:90,treatment:'Copper oxychloride 3g/L. Remove infected twigs. Avoid overhead irrigation.',severity:'High'},
+  {name:'Fusarium Wilt (Tomato)',type:'disease',conf:85,treatment:'Drench carbendazim + metalaxyl. Use resistant varieties. Soil solarization before planting.',severity:'High'},
+  {name:'Downy Mildew (Bajra)',type:'disease',conf:83,treatment:'Seed treatment with metalaxyl 35SD @ 6g/kg. Remove infected plants.',severity:'Medium'},
+  {name:'Bacterial Leaf Blight (Rice)',type:'disease',conf:88,treatment:'Spray copper oxychloride + streptomycin. Drain flooded fields. Use resistant varieties.',severity:'High'},
+  {name:'Anthracnose (Mango)',type:'disease',conf:86,treatment:'Mancozeb 75WP 2g/L before flowering. Carbendazim 0.05% post-harvest dip.',severity:'Medium'},
+  {name:'Karnal Bunt (Wheat)',type:'disease',conf:79,treatment:'Seed treatment with carboxin + thiram 2g/kg. Use certified disease-free seed.',severity:'High'},
+  {name:'Chilli Thrips (Scirtothrips)',type:'disease',conf:91,treatment:'Spinosad 45SC 0.5ml/L or dimethoate 2ml/L alternately. Yellow sticky traps.',severity:'Medium'},
+  {name:'Helicoverpa (Pigeonpea)',type:'disease',conf:88,treatment:'Indoxacarb 1.5ml/L or chlorantraniliprole. Set 5 pheromone traps/ha.',severity:'High'},
+  {name:'Red Rot (Sugarcane)',type:'disease',conf:84,treatment:'Destroy infected stools. Hot water treatment of setts @ 52°C for 30 min. Plant disease-free setts.',severity:'High'},
+];
+const cropTypes = ['Wheat','Rice','Maize','Cotton','Tomato','Potato','Onion','Soybean','Sugarcane','Mango','Banana','Coconut','Groundnut','Chilli','Turmeric','Chickpea','Mustard','Sunflower','Sorghum','Pearl Millet','Pigeonpea','Grapes','Papaya','Lentil','Sesame','Castor','Jute','Barley'];
+const weedTypes = ['Cynodon dactylon (Doob grass)','Parthenium hysterophorus (Congress grass)','Cyperus rotundus (Nutgrass)','Chenopodium album (Bathua)','Digitaria sanguinalis (Crabgrass)','Phalaris minor (Little seed canary grass)','Echinochloa crus-galli (Barnyard grass)','Amaranthus viridis (Green amaranth)','Commelina benghalensis (Dayflower)','Ageratum conyzoides (Goatweed)','Convolvulus arvensis (Field bindweed)','Trianthema portulacastrum (Horse purslane)'];
+
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('imgPreview').src = ev.target.result;
+    document.getElementById('imgPreviewBox').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+let cameraStreamObj = null;
+async function startCamera() {
+  try {
+    cameraStreamObj = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    const video = document.getElementById('cameraStream');
+    video.srcObject = cameraStreamObj;
+    video.style.display = 'block';
+    document.getElementById('cameraPlaceholder').style.display = 'none';
+    document.getElementById('captureBtn').style.display = '';
+  } catch(e) {
+    alert('Camera access denied or not available.');
+  }
+}
+function capturePhoto() {
+  const video = document.getElementById('cameraStream');
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video,0,0);
+  const dataUrl = canvas.toDataURL('image/jpeg');
+  document.getElementById('imgPreview').src = dataUrl;
+  document.getElementById('imgPreviewBox').style.display = 'block';
+  setTab(document.querySelectorAll('.detect-tabs')[0], 'upload-tab', 'detect-tabs');
+}
+function stopCamera() {
+  if (cameraStreamObj) { cameraStreamObj.getTracks().forEach(t=>t.stop()); cameraStreamObj=null; }
+  document.getElementById('cameraStream').style.display='none';
+  document.getElementById('cameraPlaceholder').style.display='';
+  document.getElementById('captureBtn').style.display='none';
+}
+
+// ========================
+// API CONFIG — change this URL when you deploy to Hugging Face
+// ========================
+const AGROVISION_API = 'https://ShreyashM25-agrovision-api.hf.space';
+
+async function runDetection() {
+  const out = document.getElementById('detectOutput');
+
+  // ── Get image file ────────────────────────────────────────────────────
+  const fileInput = document.getElementById('fileInput');
+  const preview   = document.getElementById('imgPreview');
+
+  // Check if we have an image (uploaded file OR camera capture)
+  const hasUpload  = fileInput.files && fileInput.files[0];
+  const hasCapture = preview.src && preview.src.startsWith('data:image');
+
+  if (!hasUpload && !hasCapture) {
+    out.innerHTML = '<div style="text-align:center;padding:20px;color:#ef9a9a;">⚠️ Please upload an image or capture from camera first.</div>';
+    return;
+  }
+
+  // ── Show loading state ────────────────────────────────────────────────
+  out.innerHTML = `
+    <div style="text-align:center;padding:24px;">
+      <div style="font-size:28px;margin-bottom:10px;animation:pulse 1s infinite;">🔬</div>
+      <div style="color:var(--accent2);font-size:13px;font-weight:500;">Analyzing with AgroVision AI...</div>
+      <div style="color:var(--text3);font-size:11px;margin-top:4px;">Running EfficientNetV2B0 model</div>
+    </div>`;
+
+  try {
+    // ── Build FormData ────────────────────────────────────────────────
+    const formData = new FormData();
+
+    if (hasUpload) {
+      // Direct file upload
+      formData.append('image', fileInput.files[0]);
+    } else {
+      // Camera capture — convert base64 dataURL → Blob
+      const res   = await fetch(preview.src);
+      const blob  = await res.blob();
+      formData.append('image', blob, 'capture.jpg');
+    }
+
+    // ── Call Flask API ────────────────────────────────────────────────
+    const response = await fetch(`${AGROVISION_API}/predict`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || `Server error ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || 'Prediction failed');
+    }
+
+    // ── Parse result ──────────────────────────────────────────────────
+    const top    = data.top_prediction;
+    const top3   = data.top_3;
+
+    // Format class name: "Tomato___Late_blight" → "Tomato — Late blight"
+    function formatClass(cls) {
+      return cls.replace(/___/g, ' — ').replace(/_/g, ' ');
+    }
+
+    // Determine tag type for the top prediction
+    const isHealthy = top.type === 'healthy';
+    const isWeed    = top.type === 'weed';
+    const tagClass  = isHealthy ? 'tag-crop' : isWeed ? 'tag-weed' : 'tag-disease';
+    const tagIcon   = isHealthy ? '✅' : isWeed ? '🌿' : '⚠️';
+
+    // Severity badge color
+    const sevCls = top.severity === 'High' ? 'badge-red'
+                 : top.severity === 'Medium' ? 'badge-amber'
+                 : top.severity === 'None' ? 'badge-green'
+                 : 'badge-green';
+
+    // Confidence bar color
+    const conf    = Math.round(top.confidence * 100);
+    const barColor = conf >= 80 ? 'var(--accent)'
+                   : conf >= 50 ? '#ffc107'
+                   : '#ef5350';
+
+    // ── Build result HTML ─────────────────────────────────────────────
+    out.innerHTML = `
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Detected</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;">
+          <span class="detection-tag ${tagClass}">${tagIcon} ${formatClass(top.class)}</span>
+        </div>
+
+        <div class="progress-row">
+          <div class="progress-label">Confidence</div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${conf}%;background:${barColor};"></div>
+          </div>
+          <div class="progress-val">${conf}%</div>
+        </div>
+      </div>
+
+      <div class="result-box">
+        <div class="result-title">${formatClass(top.class)}</div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+          <span class="badge ${sevCls}">${top.severity} severity</span>
+          <span class="badge badge-blue">${top.type}</span>
+        </div>
+        ${!isHealthy ? `
+        <div style="font-size:12px;color:var(--text2);line-height:1.8;">
+          💊 <strong>Treatment:</strong><br/>${top.treatment}
+        </div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-top:8px;">
+          🛡️ <strong>Prevention:</strong><br/>${top.prevention}
+        </div>` : `
+        <div style="font-size:12px;color:var(--accent2);line-height:1.8;">
+          ✅ ${top.treatment}
+        </div>`}
+      </div>
+
+      <div class="result-box" style="margin-top:10px;">
+        <div class="result-title" style="margin-bottom:8px;">Top 3 Predictions</div>
+        ${top3.map((p, i) => `
+          <div class="progress-row" style="margin-bottom:6px;">
+            <div class="progress-label" style="width:160px;font-size:11px;">${formatClass(p.class)}</div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${Math.round(p.confidence*100)}%;opacity:${i===0?1:0.6};"></div>
+            </div>
+            <div class="progress-val">${p.confidence_pct}</div>
+          </div>`).join('')}
+      </div>
+
+      <div style="font-size:10px;color:var(--text3);margin-top:8px;text-align:right;">
+        Model: EfficientNetV2B0 · 38 classes · 224×224
+      </div>`;
+
+  } catch (err) {
+    // ── Error state ───────────────────────────────────────────────────
+    const isNetwork = err.message.includes('fetch') || err.message.includes('Failed');
+    out.innerHTML = `
+      <div style="text-align:center;padding:20px;">
+        <div style="font-size:28px;margin-bottom:10px;">❌</div>
+        <div style="color:#ef9a9a;font-size:13px;font-weight:500;margin-bottom:6px;">
+          ${isNetwork ? 'Cannot connect to AgroVision API' : 'Detection failed'}
+        </div>
+        <div style="color:var(--text3);font-size:11px;line-height:1.7;">
+          ${isNetwork
+            ? 'Make sure the Flask API is running:<br/><code style="background:var(--bg);padding:2px 6px;border-radius:4px;">python app.py</code>'
+            : err.message}
+        </div>
+      </div>`;
+    console.error('Detection error:', err);
+  }
+}
+
+// ========================
+// CITY PRESETS
+// ========================
+const cityPresets = {
+  'Pune':      {N:90,P:42,K:43,temp:24,humid:65,pH:6.8,rain:700,soil:'Black Cotton',info:'Pune District — Black cotton soil, 700mm rain, 560m elevation. Good for: Sugarcane, Vegetables, Onion, Soybean.'},
+  'Mumbai':    {N:60,P:30,K:35,temp:28,humid:78,pH:6.2,rain:2200,soil:'Red Laterite',info:'Mumbai Region — Coastal laterite/alluvial, 2200mm+ monsoon. Good for: Coconut, Paddy, Banana, Vegetables.'},
+  'Nashik':    {N:85,P:50,K:60,temp:22,humid:60,pH:7.0,rain:600,soil:'Black Cotton',info:'Nashik — Famous grape & onion belt. Volcanic black soil, 600mm. Good for: Grapes, Onion, Tomato, Wheat.'},
+  'Nagpur':    {N:75,P:38,K:45,temp:28,humid:55,pH:7.2,rain:1100,soil:'Black Cotton',info:'Vidarbha (Nagpur) — Deep black cotton soil, 1100mm. Good for: Cotton, Soybean, Orange, Wheat.'},
+  'Kolhapur':  {N:95,P:48,K:55,temp:26,humid:70,pH:6.5,rain:1000,soil:'Black Cotton',info:'Kolhapur — Fertile black soil, sugarcane belt of Maharashtra. Good for: Sugarcane, Rice, Vegetables.'},
+  'Solapur':   {N:70,P:35,K:40,temp:27,humid:50,pH:7.5,rain:500,soil:'Black Cotton',info:'Solapur — Semi-arid, low rainfall 500mm. Good for: Jowar, Chickpea, Sunflower, Cotton.'},
+  'Aurangabad':{N:80,P:40,K:48,temp:26,humid:55,pH:7.3,rain:650,soil:'Black Cotton',info:'Marathwada (Aurangabad) — Black cotton, 650mm rain. Good for: Cotton, Soybean, Jowar, Chickpea.'},
+  'Amravati':  {N:72,P:36,K:44,temp:28,humid:55,pH:7.1,rain:950,soil:'Black Cotton',info:'Amravati (Vidarbha) — Cotton + orange belt. 950mm rain. Good for: Cotton, Orange, Soybean.'},
+  'Delhi':     {N:100,P:55,K:70,temp:22,humid:50,pH:7.5,rain:800,soil:'Alluvial',info:'Delhi NCR — IGP alluvial soil. Good for: Wheat, Mustard, Potato, Vegetables, Maize.'},
+  'Lucknow':   {N:110,P:60,K:55,temp:20,humid:55,pH:7.8,rain:900,soil:'Alluvial',info:'UP (Lucknow) — Deep alluvial. Wheat-rice rotation belt. Good for: Wheat, Rice, Sugarcane, Potato.'},
+  'Varanasi':  {N:105,P:58,K:52,temp:24,humid:60,pH:7.6,rain:1100,soil:'Alluvial',info:'UP (Varanasi) — Gangetic alluvial. Good for: Rice, Wheat, Vegetables, Mustard, Maize.'},
+  'Patna':     {N:108,P:55,K:50,temp:24,humid:65,pH:7.5,rain:1100,soil:'Alluvial',info:'Bihar (Patna) — Fertile IGP alluvial. Good for: Rice, Wheat, Maize, Litchi, Vegetables.'},
+  'Amritsar':  {N:120,P:65,K:80,temp:18,humid:60,pH:7.8,rain:650,soil:'Alluvial',info:'Punjab (Amritsar) — Rich alluvial. Wheat-rice belt. Good for: Wheat, Rice, Maize, Cotton, Potato.'},
+  'Ludhiana':  {N:125,P:68,K:82,temp:17,humid:58,pH:7.9,rain:700,soil:'Alluvial',info:'Punjab (Ludhiana) — Wheat-rice capital of India. Good for: Wheat, Rice, Cotton, Potato.'},
+  'Jaipur':    {N:65,P:32,K:38,temp:26,humid:38,pH:8.0,rain:550,soil:'Sandy Loam',info:'Rajasthan (Jaipur) — Sandy loam, arid. Good for: Bajra, Jowar, Mustard, Chickpea, Castor.'},
+  'Jodhpur':   {N:55,P:28,K:35,temp:30,humid:30,pH:8.2,rain:370,soil:'Sandy',info:'Rajasthan (Jodhpur) — Arid, 370mm rain. Good for: Bajra, Moth bean, Clusterbean (Guar), Castor, Sesame.'},
+  'Hyderabad': {N:80,P:40,K:50,temp:26,humid:60,pH:6.5,rain:800,soil:'Red Laterite',info:'Telangana (Hyderabad) — Red sandy loam. Good for: Cotton, Maize, Turmeric, Vegetables, Sorghum.'},
+  'Warangal':  {N:75,P:38,K:48,temp:28,humid:62,pH:6.4,rain:900,soil:'Red Laterite',info:'Telangana (Warangal) — Red loam, cotton belt. Good for: Cotton, Rice, Maize, Turmeric.'},
+  'Chennai':   {N:70,P:35,K:40,temp:30,humid:72,pH:6.0,rain:1200,soil:'Red Laterite',info:'Tamil Nadu (Chennai) — Coastal laterite. Good for: Rice, Groundnut, Sugarcane, Banana, Coconut.'},
+  'Coimbatore':{N:80,P:42,K:52,temp:27,humid:65,pH:6.5,rain:700,soil:'Red Laterite',info:'TN (Coimbatore) — Red loam. Good for: Cotton, Maize, Groundnut, Vegetables, Banana.'},
+  'Madurai':   {N:75,P:38,K:48,temp:30,humid:68,pH:6.3,rain:900,soil:'Red Laterite',info:'TN (Madurai) — Good for: Rice (Kambam valley), Banana, Turmeric, Jasmine, Vegetables.'},
+  'Bengaluru': {N:75,P:45,K:55,temp:22,humid:65,pH:6.3,rain:900,soil:'Red Laterite',info:'Karnataka (Bengaluru) — Red loam. Good for: Ragi, Maize, Vegetables, Flowers, Mulberry.'},
+  'Mysuru':    {N:80,P:45,K:58,temp:24,humid:68,pH:6.4,rain:800,soil:'Red Laterite',info:'Karnataka (Mysuru) — Good for: Sugarcane, Rice, Ragi, Vegetables, Silk (mulberry).'},
+  'Dharwad':   {N:85,P:48,K:55,temp:24,humid:62,pH:6.8,rain:750,soil:'Black Cotton',info:'Karnataka (Dharwad) — Black cotton belt. Good for: Cotton, Soybean, Maize, Chickpea.'},
+  'Vizag':     {N:78,P:40,K:50,temp:28,humid:72,pH:6.2,rain:1100,soil:'Red Laterite',info:'AP (Visakhapatnam) — Coastal red loam. Good for: Rice, Sugarcane, Cashew, Turmeric, Banana.'},
+  'Guntur':    {N:80,P:42,K:52,temp:30,humid:68,pH:6.5,rain:1000,soil:'Alluvial',info:'AP (Guntur) — Chilli capital of India! Krishna-Godavari delta alluvial. Good for: Chilli, Cotton, Tobacco, Rice.'},
+  'Ratnagiri': {N:60,P:32,K:42,temp:28,humid:82,pH:6.0,rain:3000,soil:'Laterite',info:'Konkan (Ratnagiri) — Heavy rain 3000mm+, laterite. Good for: Alphonso Mango, Cashew, Coconut, Paddy, Kokum.'},
+  'Indore':    {N:88,P:45,K:52,temp:24,humid:55,pH:7.0,rain:950,soil:'Black Cotton',info:'MP (Indore) — Black cotton belt, soybean capital. Good for: Soybean, Wheat, Cotton, Maize, Garlic.'},
+  'Bhopal':    {N:85,P:44,K:50,temp:23,humid:58,pH:7.1,rain:1100,soil:'Black Cotton',info:'MP (Bhopal) — Good for: Wheat, Soybean, Maize, Chickpea, Onion.'},
+  'Raipur':    {N:80,P:40,K:45,temp:27,humid:70,pH:6.5,rain:1300,soil:'Red Laterite',info:'Chhattisgarh (Raipur) — Rice bowl state. Good for: Rice, Maize, Soybean, Groundnut, Vegetables.'},
+  'Bhubaneswar':{N:78,P:38,K:44,temp:28,humid:78,pH:6.3,rain:1500,soil:'Red Laterite',info:'Odisha (Bhubaneswar) — Good for: Rice, Groundnut, Turmeric, Jute, Coconut.'},
+  'Kolkata':   {N:90,P:45,K:50,temp:28,humid:80,pH:6.5,rain:1800,soil:'Alluvial',info:'West Bengal (Kolkata) — Delta alluvial. Good for: Rice, Jute, Potato, Vegetables, Mustard.'},
+  'Siliguri':  {N:85,P:42,K:48,temp:24,humid:82,pH:5.8,rain:2500,soil:'Alluvial',info:'North Bengal (Siliguri) — Hilly alluvial, heavy rain. Good for: Tea, Ginger, Maize, Vegetables, Pineapple.'},
+  'Guwahati':  {N:80,P:38,K:44,temp:25,humid:82,pH:5.5,rain:1800,soil:'Alluvial',info:'Assam (Guwahati) — Good for: Tea, Rice, Jute, Mustard, Ginger, Turmeric.'},
+  'Nagaur':    {N:55,P:28,K:33,temp:28,humid:32,pH:8.1,rain:400,soil:'Sandy Loam',info:'Rajasthan (Nagaur) — Arid. Good for: Bajra, Mustard, Chickpea, Fenugreek, Jeera (Cumin).'},
+  'Sangli':    {N:88,P:46,K:55,temp:27,humid:55,pH:7.2,rain:550,soil:'Black Cotton',info:'Maharashtra (Sangli) — Grape & sugar belt. Good for: Grapes, Sugarcane, Turmeric, Soybean.'},
+};
+
+function loadPreset(city) {
+  document.getElementById('cropCity').value = city;
+  loadCityParams();
+}
+
+async function loadCityParams() {
+  const city = document.getElementById('cropCity').value.trim();
+  if (!city) return;
+  const preset = cityPresets[city] || cityPresets[Object.keys(cityPresets).find(k=>k.toLowerCase()===city.toLowerCase())];
+  
+  const display = document.getElementById('cityParamDisplay');
+  if (preset) {
+    document.getElementById('paramN').value = preset.N;
+    document.getElementById('paramP').value = preset.P;
+    document.getElementById('paramK').value = preset.K;
+    document.getElementById('paramTemp').value = preset.temp;
+    document.getElementById('paramHumid').value = preset.humid;
+    document.getElementById('paramPH').value = preset.pH;
+    document.getElementById('paramRain').value = preset.rain;
+    display.innerHTML = `📍 <strong>${city}</strong> — ${preset.info}<br/><span style="color:var(--text3);">Soil type: ${preset.soil} | Rainfall: ${preset.rain}mm</span>`;
+    display.style.display = 'block';
+    document.getElementById('currentCity').textContent = city;
+    // fetch weather too
+    try {
+      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&country=IN`);
+      const data = await res.json();
+      if (data.results?.[0]) {
+        const r = data.results[0];
+        fetchWeatherByCoords(r.latitude, r.longitude, r.name + (r.admin1?', '+r.admin1.substring(0,2):''));
+      }
+    } catch(e){}
+  } else {
+    display.innerHTML = `📍 ${city} — Enter parameters manually or choose from preset cities below.`;
+    display.style.display = 'block';
+  }
+}
+
+function useCurrentLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude, 'Your Location');
+      document.getElementById('paramTemp').value = Math.round(document.getElementById('tempEl').textContent);
+    });
+  }
+}
+
+// ========================
+// CROP RECOMMENDATION
+// ========================
+const cropDB = [
+  {name:'Rice',icon:'🌾',N:[80,200],P:[30,80],K:[30,80],temp:[20,38],humid:[60,100],pH:[5.5,7.5],rain:[150,300],score:0},
+  {name:'Wheat',icon:'🌿',N:[80,160],P:[40,80],K:[30,70],temp:[10,25],humid:[40,70],pH:[6.0,8.0],rain:[50,200],score:0},
+  {name:'Maize',icon:'🌽',N:[100,200],P:[50,100],K:[50,100],temp:[18,35],humid:[50,80],pH:[5.5,7.5],rain:[100,200],score:0},
+  {name:'Cotton',icon:'🤍',N:[80,150],P:[40,80],K:[40,80],temp:[22,38],humid:[40,70],pH:[6.5,8.5],rain:[60,110],score:0},
+  {name:'Sugarcane',icon:'🎋',N:[100,200],P:[60,100],K:[80,160],temp:[20,38],humid:[50,80],pH:[6.0,8.0],rain:[100,200],score:0},
+  {name:'Tomato',icon:'🍅',N:[80,140],P:[60,100],K:[60,120],temp:[18,30],humid:[50,75],pH:[6.0,7.0],rain:[60,150],score:0},
+  {name:'Onion',icon:'🧅',N:[70,120],P:[50,80],K:[50,80],temp:[15,28],humid:[40,65],pH:[6.0,7.5],rain:[35,100],score:0},
+  {name:'Potato',icon:'🥔',N:[100,180],P:[80,140],K:[120,200],temp:[10,22],humid:[60,80],pH:[5.0,6.5],rain:[60,120],score:0},
+  {name:'Soybean',icon:'🫘',N:[20,60],P:[50,100],K:[40,80],temp:[20,30],humid:[50,80],pH:[6.0,7.5],rain:[80,180],score:0},
+  {name:'Groundnut',icon:'🥜',N:[20,50],P:[40,80],K:[60,120],temp:[24,32],humid:[40,65],pH:[5.5,7.0],rain:[50,130],score:0},
+  {name:'Grapes',icon:'🍇',N:[70,130],P:[50,90],K:[60,120],temp:[15,30],humid:[40,70],pH:[6.0,8.0],rain:[50,100],score:0},
+  {name:'Mango',icon:'🥭',N:[60,120],P:[40,80],K:[60,100],temp:[24,38],humid:[40,70],pH:[5.5,7.5],rain:[100,200],score:0},
+  {name:'Banana',icon:'🍌',N:[150,250],P:[50,100],K:[200,350],temp:[22,35],humid:[60,90],pH:[6.0,7.5],rain:[120,220],score:0},
+  {name:'Coconut',icon:'🥥',N:[80,150],P:[40,80],K:[120,200],temp:[24,38],humid:[60,90],pH:[5.5,8.0],rain:[100,250],score:0},
+  {name:'Turmeric',icon:'🟡',N:[60,120],P:[40,80],K:[80,150],temp:[20,35],humid:[60,90],pH:[5.5,7.5],rain:[100,220],score:0},
+  {name:'Chilli',icon:'🌶️',N:[100,160],P:[50,90],K:[60,110],temp:[20,35],humid:[50,80],pH:[6.0,7.5],rain:[60,150],score:0},
+  {name:'Chickpea',icon:'🟤',N:[20,50],P:[50,90],K:[30,60],temp:[15,28],humid:[30,60],pH:[6.0,9.0],rain:[30,100],score:0},
+  {name:'Mustard',icon:'🌼',N:[60,120],P:[30,60],K:[30,60],temp:[10,25],humid:[30,60],pH:[6.0,8.0],rain:[30,100],score:0},
+  {name:'Sunflower',icon:'🌻',N:[80,140],P:[50,90],K:[50,100],temp:[20,32],humid:[40,70],pH:[6.0,8.0],rain:[50,150],score:0},
+  {name:'Barley',icon:'🌱',N:[60,120],P:[30,60],K:[30,60],temp:[8,24],humid:[35,65],pH:[6.0,8.5],rain:[40,150],score:0},
+  {name:'Sorghum (Jowar)',icon:'🌾',N:[60,120],P:[30,60],K:[30,60],temp:[24,38],humid:[30,70],pH:[6.0,8.0],rain:[30,100],score:0},
+  {name:'Pearl Millet (Bajra)',icon:'🌾',N:[60,110],P:[30,60],K:[30,60],temp:[25,38],humid:[25,60],pH:[5.5,8.0],rain:[20,80],score:0},
+  {name:'Pigeonpea (Arhar)',icon:'🟡',N:[20,40],P:[50,90],K:[30,60],temp:[22,35],humid:[40,80],pH:[6.0,7.5],rain:[60,160],score:0},
+  {name:'Lentil (Masoor)',icon:'🟠',N:[20,40],P:[40,80],K:[30,60],temp:[12,24],humid:[30,55],pH:[6.0,8.0],rain:[30,90],score:0},
+  {name:'Jute',icon:'🟫',N:[60,120],P:[30,60],K:[30,60],temp:[25,36],humid:[60,90],pH:[6.0,7.5],rain:[120,200],score:0},
+  {name:'Sesame',icon:'⚪',N:[40,80],P:[30,60],K:[30,60],temp:[25,35],humid:[30,60],pH:[5.5,7.5],rain:[35,100],score:0},
+  {name:'Castor',icon:'🌿',N:[40,80],P:[30,60],K:[30,60],temp:[24,36],humid:[25,60],pH:[5.0,7.5],rain:[40,150],score:0},
+  {name:'Papaya',icon:'🍈',N:[100,180],P:[60,100],K:[100,180],temp:[22,36],humid:[50,80],pH:[6.0,6.5],rain:[100,180],score:0},
+];
+
+function inRange(val, min, max) { return val >= min && val <= max ? 1 : (Math.abs(val-((min+max)/2)) / ((max-min)/2)); }
+
+function getCropRec() {
+  const N=+document.getElementById('paramN').value;
+  const P=+document.getElementById('paramP').value;
+  const K=+document.getElementById('paramK').value;
+  const temp=+document.getElementById('paramTemp').value;
+  const humid=+document.getElementById('paramHumid').value;
+  const pH=+document.getElementById('paramPH').value;
+  const rain=+document.getElementById('paramRain').value;
+
+  const scored = cropDB.map(c => {
+    let s=0;
+    if(N>=c.N[0]&&N<=c.N[1])s+=20;
+    if(P>=c.P[0]&&P<=c.P[1])s+=15;
+    if(K>=c.K[0]&&K<=c.K[1])s+=15;
+    if(temp>=c.temp[0]&&temp<=c.temp[1])s+=20;
+    if(humid>=c.humid[0]&&humid<=c.humid[1])s+=10;
+    if(pH>=c.pH[0]&&pH<=c.pH[1])s+=10;
+    if(rain>=c.rain[0]&&rain<=c.rain[1])s+=10;
+    // Apply learned feedback weight boost
+    const boost = cropScoreBoost[c.name] || 1.0;
+    s = s * boost;
+    return {...c, score:s};
+  }).sort((a,b)=>b.score-a.score).slice(0,6);
+
+  let html = '';
+  scored.forEach((c,i)=>{
+    const pct = Math.round(c.score);
+    html += `<div class="crop-item">
+      <div class="crop-icon">${c.icon}</div>
+      <div style="flex:1;">
+        <div class="crop-name">${c.name}</div>
+        <div class="progress-bar" style="margin-top:4px;"><div class="progress-fill" style="width:${pct}%;"></div></div>
+      </div>
+      <div style="text-align:right;min-width:50px;">
+        <div class="crop-score">${pct}%</div>
+        ${i===0?'<span class="badge badge-green" style="font-size:10px;">Best</span>':''}
+      </div>
+    </div>`;
+  });
+  document.getElementById('cropResults').innerHTML = html || '<div style="padding:20px;text-align:center;color:var(--text3);">No matches found</div>';
+  document.getElementById('fb-crop').style.display = 'flex';
+  resetFeedbackBar('crop');
+  updateSidebarStats();
+}
+
+// ========================
+// FERTILIZER
+// ========================
+const fertData = {
+  Wheat:{base:'NPK 120:60:40 kg/ha',urea:'Split in 3: basal 40kg Urea at sowing, 40kg at CRI (21 days), 40kg at heading',organic:'FYM 10 t/ha incorporated 2–3 weeks before sowing',pest:{None:'',
+    'Yellowing leaves':'Apply 0.5% urea foliar spray + 0.5% zinc sulphate. Check for iron deficiency in alkaline soils.',
+    'Insect damage':'Chlorpyrifos 20EC @ 2ml/L or imidacloprid 17.8SL @ 0.3ml/L. Use pheromone traps for armyworm.',
+    'Leaf spots / blight':'Propiconazole 25EC @ 0.1% or tebuconazole. 2 sprays at 10-day interval. Avoid overhead irrigation.',
+    'Stunted growth':'Apply 20 kg Zinc Sulphate/ha + FYM 5 t/ha. Check and correct soil pH to 6.5–7.5.',
+    'Root rot':'Drench with carbendazim 1g/L. Improve drainage. Avoid waterlogging at seedling stage.',
+    'Wilting':'Check for crown rot. Apply copper oxychloride 3g/L. Ensure proper seed treatment next season.'}},
+
+  Rice:{base:'NPK 100:50:50 kg/ha',urea:'3 splits: basal 30% at transplanting, 40% at active tillering (21 DAT), 30% at panicle initiation',organic:'Green manuring with Dhaincha (Sesbania) or FYM 8 t/ha',pest:{None:'',
+    'Leaf spots / blight':'Tricyclazole 75WP @ 0.6g/L for blast. Mancozeb 2.5g/L for brown spot. Improve drainage.',
+    'Insect damage':'Chlorpyrifos 20EC + cypermethrin for stem borer. Light traps at 1/ha. BPH — buprofezin 0.75ml/L.',
+    'Yellowing leaves':'Iron sulfate 1% foliar spray. Zinc sulphate 25 kg/ha soil application. Check for khaira disease.',
+    'Stunted growth':'BPH or gall midge suspect — imidacloprid 0.5ml/L. Apply zinc sulphate 25 kg/ha.',
+    'Root rot':'Drain standing water. Apply copper oxychloride. Avoid transplanting in cold conditions.',
+    'Wilting':'Check for bacterial leaf blight — spray streptomycin + copper oxychloride. Drain fields immediately.'}},
+
+  Maize:{base:'NPK 120:60:40 kg/ha',urea:'3 splits: 1/3 basal at sowing, 1/3 at knee-high stage (V6), 1/3 at tasseling',organic:'FYM 8 t/ha or compost 5 t/ha incorporated before sowing',pest:{None:'',
+    'Yellowing leaves':'Apply 1% urea foliar spray. Add zinc sulphate 25 kg/ha. Check iron and sulfur levels.',
+    'Insect damage':'Fall armyworm — spinetoram 0.5ml/L or emamectin benzoate 0.4g/L. Apply in whorl stage.',
+    'Leaf spots / blight':'Mancozeb 75WP 2.5g/L for Turcicum blight. Improve plant spacing for airflow.',
+    'Stunted growth':'Apply FYM 5 t/ha + zinc sulphate 15 kg/ha. Check for maize streak virus — control leafhopper vector.',
+    'Root rot':'Thiram + carbendazim seed treatment. Avoid waterlogging. Apply trichoderma to soil.',
+    'Poor fruiting':'Boron 1g/L foliar spray at tasseling. Ensure adequate irrigation at silk stage.'}},
+
+  Cotton:{base:'NPK 150:60:60 kg/ha for irrigated cotton; 80:40:40 for rainfed',urea:'1/3 basal + 1/3 at squaring (45 days) + 1/3 at boll development (75 days)',organic:'FYM 10 t/ha + neem cake 200 kg/ha incorporated before sowing',pest:{None:'',
+    'Insect damage':'Bt cotton: quinalphos 2ml/L for army worm. Thiamethoxam 0.5g/L for whitefly. Spinosad for thrips.',
+    'Leaf spots / blight':'Copper oxychloride 3g/L for bacterial blight. Improve field drainage. Avoid dense planting.',
+    'Wilting':'Trichoderma viride 2 kg/ha soil drench. Avoid waterlogging. Use resistant varieties next season.',
+    'Poor fruiting':'Boron 1g/L + zinc 0.5% foliar spray at bud stage. Remove abscised squares. Check for thrips damage.',
+    'Root rot':'Apply metalaxyl-mancozeb drench. Improve drainage. Seed treat with thiram + carbendazim.',
+    'Yellowing leaves':'Apply 0.5% zinc sulphate + 0.5% ferrous sulphate foliar spray. Check soil pH.'}},
+
+  Sugarcane:{base:'NPK 250:60:100 kg/ha; ratoon crop 200:50:80 kg/ha',urea:'4 splits: planting 25%, 60 days 25%, 120 days 30%, 180 days 20%',organic:'Pressmud cake 10 t/ha + FYM 10 t/ha + trichoderma 2 kg/ha at planting',pest:{None:'',
+    'Insect damage':'Early shoot borer — Chlorpyrifos 5G @ 20 kg/ha in furrows. Pyrilla — release Epiricania melanoleuca bioagent.',
+    'Leaf spots / blight':'Copper oxychloride 3g/L for red stripe. Weed control reduces disease spread.',
+    'Wilting':'Red rot (Colletotrichum) — destroy infected stools. Plant disease-free setts from certified nursery.',
+    'Root rot':'Improve drainage. Hot water treatment of setts @ 52°C for 30 min before planting.',
+    'Poor fruiting':'Apply potassium (MOP 80 kg/ha) + boron 1 kg/ha foliar at grand growth stage.',
+    'Yellowing leaves':'Apply zinc sulphate 25 kg/ha + iron sulphate 25 kg/ha. Check drainage status.'}},
+
+  Tomato:{base:'NPK 180:60:60 kg/ha + Ca 40 kg/ha',urea:'10 splits via fertigation: N weekly after transplanting for 10 weeks',organic:'Vermicompost 5 t/ha + trichoderma 2 kg/ha at transplanting',pest:{None:'',
+    'Leaf spots / blight':'Mancozeb 75WP 2.5g/L for early blight. Metalaxyl-mancozeb for late blight. Spray at first signs.',
+    'Wilting':'Drench carbendazim + metalaxyl for Fusarium/Phytophthora. Remove infected plants immediately.',
+    'Insect damage':'Spinosad 45SC @ 0.5ml/L for thrips. Imidacloprid 0.3ml/L for whitefly. Yellow sticky traps.',
+    'Poor fruiting':'Boron 1g/L foliar at flowering. Check calcium supply. Improve pollination with bee colonies.',
+    'Root rot':'Drench with metalaxyl-mancozeb. Improve drainage. Raise beds 15–20 cm. Soil solarization pre-planting.',
+    'Yellowing leaves':'Apply 0.5% ferrous sulphate spray. Check Mg — apply Epsom salt 2g/L. Avoid nitrogen excess.'}},
+
+  Onion:{base:'NPK 100:50:50 kg/ha',urea:'3 splits: basal at transplanting 40%, 30 days 30%, 60 days 30%',organic:'FYM 20 t/ha or compost 10 t/ha incorporated 3 weeks before planting',pest:{None:'',
+    'Leaf spots / blight':'Mancozeb 2.5g/L for purple blotch (Alternaria). Iprodione for botrytis. Spray at 7-day intervals.',
+    'Insect damage':'Thrips — spinosad 0.5ml/L or fipronil 2ml/L. Apply in evening. Yellow sticky traps @ 15/ha.',
+    'Yellowing leaves':'Apply zinc sulphate 0.5% + ferrous sulphate 0.5% foliar spray. Check soil pH.',
+    'Stunted growth':'Apply boron 10 kg/ha soil. Foliar spray 0.1% borax for neck rot prevention.',
+    'Root rot':'Carbendazim 1g/L drench. Improve drainage. Avoid waterlogging especially near harvest.',
+    'Wilting':'Check for basal rot (Fusarium) — carbendazim drench + soil solarization. Remove infected bulbs.'}},
+
+  Potato:{base:'NPK 180:80:100 kg/ha',urea:'2 splits: 50% basal at planting + 50% at earthing up (30–35 days)',organic:'FYM 25 t/ha + vermicompost 5 t/ha incorporated before planting',pest:{None:'',
+    'Leaf spots / blight':'Late blight (Phytophthora) — metalaxyl-mancozeb 2.5g/L. 5-day spray interval during wet weather.',
+    'Insect damage':'Aphids (virus vector) — imidacloprid 0.3ml/L. Cut worm — chlorpyrifos 5G in soil.',
+    'Yellowing leaves':'Apply ferrous sulphate 1% + zinc sulphate 0.5% foliar. Check Mg deficiency.',
+    'Wilting':'Common scab — reduce irrigation before tuber formation. Avoid liming. Use certified seed.',
+    'Root rot':'Drench metalaxyl at planting. Use certified disease-free seed tubers. Rotate with non-solanaceous crops.',
+    'Stunted growth':'Apply zinc sulphate 25 kg/ha + borax 10 kg/ha soil. Check for nematodes — apply carbofuran 3G.'}},
+
+  Soybean:{base:'NPK 30:60:40 kg/ha (low N as crop fixes own N via Rhizobium)',urea:'Only basal starter N — 30 kg/ha. No top dressing needed if well-nodulated.',organic:'FYM 5 t/ha + Rhizobium japonicum seed inoculant @ 25 g/kg seed',pest:{None:'',
+    'Leaf spots / blight':'Septoria brown spot — mancozeb 2.5g/L. Collar rot — carbendazim 1g/L drench.',
+    'Insect damage':'Semilooper — indoxacarb 1.5ml/L. Aphids — imidacloprid. Thrips at early stage — spinosad.',
+    'Yellowing leaves':'Check iron chlorosis — apply iron chelate (FeSO4) 0.5% foliar. Check waterlogging.',
+    'Root rot':'Phytophthora root rot — metalaxyl seed treatment. Improve drainage. Plant on raised beds.',
+    'Poor fruiting':'Apply molybdenum 0.1g/L + boron 1g/L foliar at pod-fill stage. Check soil moisture.',
+    'Stunted growth':'Poor nodulation — re-inoculate seed with Rhizobium. Apply PSB biofertilizer 5 kg/ha.'}},
+
+  Groundnut:{base:'NPK 20:40:40 kg/ha + gypsum 400 kg/ha at peg formation',urea:'Basal only 20 kg/ha. Rhizobium inoculant reduces N need by 60%.',organic:'FYM 5 t/ha + compost 3 t/ha. Phosphobacteria 5 kg/ha for P availability.',pest:{None:'',
+    'Leaf spots / blight':'Tikka disease (Cercospora) — chlorothalonil 2.5g/L or mancozeb. 3 sprays at 10-day intervals.',
+    'Insect damage':'Thrips — spinosad 0.5ml/L. Leaf miner — neem oil 5ml/L. Termite — chlorpyrifos 5G in furrows.',
+    'Yellowing leaves':'Iron deficiency common — ferrous sulphate 0.5% foliar. Check soil pH (ideal 6.0–6.5).',
+    'Wilting':'Collar rot (Aspergillus) — trichoderma seed treatment + soil drench. Avoid dense planting.',
+    'Root rot':'Stem rot (Sclerotium) — apply carboxin seed treatment. Solarize soil. Crop rotation essential.',
+    'Stunted growth':'Apply gypsum 400 kg/ha if not applied. Check for Rhizobium nodulation. Add molybdenum 0.1g/L.'}},
+
+  Mango:{base:'NPK 500:200:500 g/tree/year (adult bearing tree). Increase 50g N per year up to age 10.',urea:'3 splits: June-July before rains, October post-harvest, January before flowering',organic:'FYM 50 kg/tree + neem cake 5 kg/tree. Vermicompost 10 kg/tree annually.',pest:{None:'',
+    'Leaf spots / blight':'Anthracnose — mancozeb 2.5g/L pre-flowering. Powdery mildew — sulfur 2g/L or triadimefon.',
+    'Insect damage':'Mango hopper — imidacloprid 0.3ml/L at flowering. Fruit fly — methyl eugenol traps + spinosad.',
+    'Wilting':'Die-back disease — pruning infected branches. Copper oxychloride paste on cut ends. Spray copper.',
+    'Poor fruiting':'Malformation — prune and spray NAA 200ppm. Boron 1g/L at panicle emergence.',
+    'Yellowing leaves':'Apply zinc sulphate 0.5% + borax 0.1% foliar. Ferrous sulphate 0.5% for iron chlorosis.',
+    'Root rot':'Avoid waterlogging. Apply metalaxyl-mancozeb drench near root zone. Improve drainage with sand.'}},
+
+  Grapes:{base:'NPK 200:100:200 kg/ha (established vineyard). Adjust per yield target.',urea:'6 splits via fertigation: post-pruning to berry development stage',organic:'FYM 20 t/ha + trichoderma 2 kg/ha. Vermicompost 5 t/ha pre-pruning.',pest:{None:'',
+    'Leaf spots / blight':'Downy mildew — metalaxyl-mancozeb 2.5g/L. Powdery mildew — sulfur 2g/L or myclobutanil.',
+    'Insect damage':'Thrips — spinosad 0.5ml/L. Mealybug — buprofezin + imidacloprid. Introduce cryptolaemus beetles.',
+    'Yellowing leaves':'Iron chlorosis — iron chelate (EDTA-Fe) 0.5g/L foliar. Apply at 15-day intervals.',
+    'Poor fruiting':'Berry shatter — apply boron 1g/L at flowering. Gibberellic acid for berry sizing.',
+    'Root rot':'Phytophthora root rot — metalaxyl drench. Avoid heavy irrigation. Raise vine rows.',
+    'Wilting':'Check for crown gall (Agrobacterium) — no cure. Destroy plant. Disinfect tools with bleach.'}},
+
+  Banana:{base:'NPK 200:60:220 g/plant/year. High K requirement for quality bunches.',urea:'6 monthly splits: 33g N per month per plant throughout crop cycle',organic:'FYM 10 kg/plant at planting + 5 kg at 3 and 6 months. Pseudomonas 10g/plant.',pest:{None:'',
+    'Leaf spots / blight':'Sigatoka (Mycosphaerella) — propiconazole 0.1% + sticker. 21-day spray schedule.',
+    'Insect damage':'Banana weevil (Cosmopolites) — chlorpyrifos 5G in corm region. Rhizome injection method.',
+    'Yellowing leaves':'Panama wilt suspect — no cure. Destroy plant. Use resistant Cavendish or FHIA varieties.',
+    'Wilting':'Bacterial wilt (Xanthomonas) — remove and destroy immediately. No chemical cure. Disinfect tools.',
+    'Root rot':'Improve drainage. Mancozeb drench for Pythium. Avoid mechanical root damage during interculture.',
+    'Stunted growth':'Apply micronutrient mix — zinc, boron, iron foliar spray monthly. Check nematode infestation.'}},
+
+  Coconut:{base:'NPK 500:320:1200 g/tree/year. High K demand for nut development.',urea:'4 splits applied in pits: April, July, September, November. Mix with FYM.',organic:'FYM 50 kg/tree + neem cake 5 kg/tree + coir pith compost 10 kg/tree annually.',pest:{None:'',
+    'Insect damage':'Rhinoceros beetle — carbaryl 10% dust in crown + pheromone traps. Coconut mite — wettable sulfur.',
+    'Leaf spots / blight':'Bud rot (Phytophthora) — remove rotting tissue. Apply Bordeaux mixture 1% in crown.',
+    'Yellowing leaves':'Leaf yellowing (Kerala wilt) — apply MgSO₄ 500g + FeSO₄ 200g + ZnSO₄ 50g per tree.',
+    'Wilting':'Root wilt disease — no cure. Maintain nutrition. Apply green manure + biofertilizers.',
+    'Root rot':'Ganoderma — remove infected root tissue. Apply trichoderma 100g in root zone. Improve drainage.',
+    'Poor fruiting':'Apply boron 50g/tree + MgSO₄ 500g/tree. Ensure adequate K. Pollination management.'}},
+
+  Chilli:{base:'NPK 120:60:60 kg/ha',urea:'4 splits: basal 30%, transplanting 20%, flowering 25%, fruit set 25%',organic:'FYM 15 t/ha + vermicompost 3 t/ha + trichoderma 2 kg/ha at transplanting',pest:{None:'',
+    'Insect damage':'Thrips — spinosad 0.5ml/L or fipronil. Mites — abamectin 1ml/L or spiromesifen. Aphids — imidacloprid.',
+    'Leaf spots / blight':'Anthracnose (Colletotrichum) — mancozeb 2.5g/L. Phytophthora blight — metalaxyl-mancozeb.',
+    'Wilting':'Phytophthora wilt — metalaxyl-mancozeb drench 2.5g/L. Remove infected plants. Improve drainage.',
+    'Poor fruiting':'Boron 1g/L + zinc 0.5% foliar at bud stage. Improve pollination. Check thrips damage on buds.',
+    'Yellowing leaves':'Mosaic virus (whitefly-transmitted) — control whitefly with imidacloprid. Remove infected plants.',
+    'Root rot':'Pythium damping off — metalaxyl seed treatment. Carbendazim drench. Solarize nursery beds.'}},
+
+  Turmeric:{base:'NPK 60:50:120 kg/ha + boron 10 kg/ha',urea:'3 splits: basal 30%, 60 days 35%, 120 days 35%',organic:'FYM 25 t/ha + vermicompost 5 t/ha + neem cake 2 t/ha at planting',pest:{None:'',
+    'Leaf spots / blight':'Leaf blotch (Taphrina) — mancozeb 2.5g/L. Rhizome rot — metalaxyl + mancozeb drench.',
+    'Insect damage':'Shoot borer — chlorpyrifos 2ml/L. Thrips — spinosad 0.5ml/L. Lace bug — dimethoate 2ml/L.',
+    'Root rot':'Pythium rhizome rot — apply metalaxyl-mancozeb 2.5g/L as soil drench. Trichoderma viride seed treatment.',
+    'Yellowing leaves':'Apply zinc sulphate 0.5% + ferrous sulphate 0.5% foliar. Boron 0.1% if tip burn seen.',
+    'Wilting':'Bacterial wilt — remove plants. Drench with copper oxychloride. Soil solarization for next crop.',
+    'Stunted growth':'Apply FYM 10 t/ha top dressing. Check nematode — apply carbofuran 3G @ 1 kg/ha.'}},
+
+  'Sorghum (Jowar)':{base:'NPK 90:40:40 kg/ha; rainfed 60:30:30',urea:'2 splits: 50% basal + 50% at knee-high stage (30 days)',organic:'FYM 8 t/ha incorporated before sowing. Add azospirillum 2.5 kg/ha seed treatment.',pest:{None:'',
+    'Insect damage':'Shoot fly — imidacloprid seed treatment 5ml/kg. Stem borer — chlorpyrifos 5G in whorl.',
+    'Leaf spots / blight':'Charcoal rot — avoid moisture stress. Leaf anthracnose — mancozeb 2.5g/L.',
+    'Yellowing leaves':'Iron chlorosis — ferrous sulphate 0.5% foliar. Zinc sulphate 25 kg/ha soil application.',
+    'Stunted growth':'Apply zinc sulphate 15 kg/ha + FYM 5 t/ha. Check for downy mildew.',
+    'Root rot':'Fusarium stalk rot — avoid moisture stress at maturity. Crop rotation. Resistant varieties.',
+    'Wilting':'Ergot fungus — spray copper fungicide at flowering. Remove infected panicles.'}},
+
+  'Pearl Millet (Bajra)':{base:'NPK 80:40:40 kg/ha; rainfed 40:20:20',urea:'2 splits: 50% basal + 50% at 30 days. Do not apply N in single dose.',organic:'FYM 6 t/ha + azospirillum seed inoculant 2.5 kg/ha',pest:{None:'',
+    'Insect damage':'Stem borer — chlorpyrifos 5G in whorl. Blister beetle at flowering — hand pick + cypermethrin.',
+    'Leaf spots / blight':'Downy mildew — metalaxyl 35SD 6g/kg seed treatment. Remove infected plants.',
+    'Yellowing leaves':'Apply zinc sulphate 25 kg/ha. Ferrous sulphate 0.5% foliar spray. Check soil pH.',
+    'Stunted growth':'Ergot infection — seed treat with thiram. Apply FYM + micronutrients.',
+    'Root rot':'Pythium damping off — avoid waterlogging. Seed treatment with metalaxyl.',
+    'Wilting':'Check for rust — propiconazole 0.1% spray. Smut — seed treatment with carboxin thiram.'}},
+
+  'Pigeonpea (Arhar)':{base:'NPK 20:60:40 kg/ha (low N as it is legume)',urea:'Only basal starter N 20 kg/ha. Rhizobium inoculant essential for N fixation.',organic:'FYM 5 t/ha + Rhizobium inoculant 25g/kg seed + PSB 5 kg/ha',pest:{None:'',
+    'Insect damage':'Helicoverpa — indoxacarb 1.5ml/L or chlorantraniliprole. Pheromone traps 5/ha for monitoring.',
+    'Leaf spots / blight':'Alternaria blight — mancozeb 2.5g/L. Phytophthora blight — metalaxyl-mancozeb.',
+    'Wilting':'Fusarium wilt — use resistant varieties (ICPL-87119). No chemical cure once established.',
+    'Root rot':'Phytophthora root rot — metalaxyl seed treatment + soil drench. Avoid waterlogging.',
+    'Yellowing leaves':'Apply zinc sulphate 0.5% foliar. Check nodulation — re-inoculate with Rhizobium if needed.',
+    'Stunted growth':'Poor nodulation — apply Rhizobium + PSB. Zinc sulphate 25 kg/ha soil application.'}},
+
+  Lentil:{base:'NPK 20:50:30 kg/ha (legume — low N)',urea:'Only starter basal N 20 kg/ha. Rhizobium lentil-specific inoculant for N fixation.',organic:'FYM 5 t/ha + Rhizobium leguminosarum 25g/kg seed',pest:{None:'',
+    'Leaf spots / blight':'Rust — propiconazole 0.1% at first sign. Stemphylium blight — mancozeb 2.5g/L.',
+    'Insect damage':'Aphids — imidacloprid 0.3ml/L or dimethoate 2ml/L. Apply at 10-day intervals.',
+    'Yellowing leaves':'Apply ferrous sulphate 0.5% + zinc sulphate 0.3% foliar. Check pH — acidic soils need liming.',
+    'Wilting':'Fusarium wilt — use resistant varieties. Carbendazim + metalaxyl soil drench as preventive.',
+    'Root rot':'Trichoderma seed treatment. Avoid sowing in waterlogged soils. Raise beds in heavy soils.',
+    'Stunted growth':'Poor Rhizobium nodulation — re-inoculate. Apply molybdenum 0.1g/L + boron 0.5g/L foliar.'}},
+
+  Chickpea:{base:'NPK 20:60:40 kg/ha (legume — minimal N required)',urea:'Only basal starter N 20 kg/ha. Mesorhizobium ciceri inoculant for biological N fixation.',organic:'FYM 5 t/ha + Phosphobacteria (PSB) 5 kg/ha + Mesorhizobium 25g/kg seed',pest:{None:'',
+    'Insect damage':'Helicoverpa — indoxacarb 1.5ml/L or thiodicarb. Pheromone trap monitoring mandatory.',
+    'Leaf spots / blight':'Ascochyta blight — mancozeb 2.5g/L + carbendazim 1g/L. Spray at 7-day interval.',
+    'Wilting':'Fusarium wilt — resistant varieties. Trichoderma seed treatment 4g/kg. Avoid irrigation excess.',
+    'Yellowing leaves':'Iron deficiency — chelated iron 0.5g/L foliar. Zinc sulphate 0.5% foliar spray.',
+    'Root rot':'Rhizoctonia root rot — thiram + carbendazim seed treatment. Improve field drainage.',
+    'Stunted growth':'Micronutrient deficiency — apply zinc sulphate 25 kg/ha + borax 10 kg/ha as soil application.'}},
+
+  Mustard:{base:'NPK 80:40:40 kg/ha',urea:'2 splits: 50% basal + 50% at first irrigation (25–30 days)',organic:'FYM 8 t/ha incorporated before sowing + Azotobacter 2.5 kg/ha',pest:{None:'',
+    'Insect damage':'Aphids — dimethoate 2ml/L or imidacloprid. Major threat — monitor weekly from January.',
+    'Leaf spots / blight':'Alternaria blight — iprodione 0.2% or mancozeb 2.5g/L. 3 sprays at 10-day intervals.',
+    'Yellowing leaves':'Apply sulphur 20 kg/ha (mustard is S-hungry crop). Ferrous sulphate 0.5% foliar.',
+    'Root rot':'Sclerotinia stem rot — carbendazim 1g/L spray at 50% flowering. Crop rotation essential.',
+    'Wilting':'White rust (Albugo) — metalaxyl-mancozeb 2.5g/L. Downy mildew — mancozeb 2.5g/L.',
+    'Stunted growth':'Apply sulphur 20 kg/ha + zinc 15 kg/ha. Check boron — apply borax 10 kg/ha.'}},
+
+  Sunflower:{base:'NPK 90:60:60 kg/ha',urea:'3 splits: basal 30%, 30 days 35%, 60 days (bud stage) 35%',organic:'FYM 8 t/ha + vermicompost 3 t/ha + azotobacter 2.5 kg/ha',pest:{None:'',
+    'Insect damage':'Leafhopper — imidacloprid 0.3ml/L. Head borer — chlorpyrifos 2ml/L. Thrips — spinosad.',
+    'Leaf spots / blight':'Alternaria leaf blight — mancozeb 2.5g/L at first sign. 3 sprays at 10-day intervals.',
+    'Wilting':'Sclerotinia head rot — tebuconazole 1ml/L. Remove infected heads. Crop rotation is key.',
+    'Yellowing leaves':'Boron deficiency — apply borax 10 kg/ha soil. Foliar spray borax 0.1% at bud stage.',
+    'Root rot':'Charcoal rot — avoid moisture stress. Seed treat with thiram + carbendazim.',
+    'Poor fruiting':'Improve bee pollination — place hives. Apply boron 1g/L at flowering for seed set.'}},
+
+  Potato:{base:'NPK 180:80:100 kg/ha',urea:'2 splits: 50% at planting (basal) + 50% at earthing up (30–35 days)',organic:'FYM 25 t/ha + vermicompost 5 t/ha incorporated before planting',pest:{None:'',
+    'Leaf spots / blight':'Late blight (Phytophthora) — metalaxyl-mancozeb 2.5g/L. Spray every 5 days in wet weather.',
+    'Insect damage':'Aphids — imidacloprid 0.3ml/L (virus vector). Cut worm — chlorpyrifos 5G in soil.',
+    'Yellowing leaves':'Apply ferrous sulphate 1% + zinc sulphate 0.5% foliar. Check Mg deficiency — Epsom salt 2g/L.',
+    'Wilting':'Common scab — reduce irrigation before tuber formation. Use certified disease-free seed tubers.',
+    'Root rot':'Metalaxyl drench at planting. Use certified seed. Avoid solanaceous crop rotation.',
+    'Stunted growth':'Apply zinc sulphate 25 kg/ha + borax 10 kg/ha. Check nematodes — carbofuran 3G 1 kg/ha.'}},
+
+  Onion:{base:'NPK 100:50:50 kg/ha',urea:'3 splits: 40% at transplanting, 30% at 30 days, 30% at 60 days',organic:'FYM 20 t/ha or compost 10 t/ha incorporated 3 weeks before planting',pest:{None:'',
+    'Leaf spots / blight':'Purple blotch (Alternaria) — mancozeb 2.5g/L + sticker. Iprodione for botrytis.',
+    'Insect damage':'Thrips — spinosad 0.5ml/L or fipronil 2ml/L. Apply in evenings. Yellow sticky traps 15/ha.',
+    'Yellowing leaves':'Apply zinc sulphate 0.5% + ferrous sulphate 0.5% foliar spray. Check soil pH.',
+    'Stunted growth':'Apply boron 10 kg/ha soil. Foliar spray borax 0.1% for neck rot prevention.',
+    'Root rot':'Carbendazim 1g/L drench. Improve drainage. Avoid waterlogging especially near harvest.',
+    'Wilting':'Basal rot (Fusarium) — carbendazim drench + soil solarization. Remove infected bulbs immediately.'}},
+
+  Garlic:{base:'NPK 100:50:50 kg/ha',urea:'3 splits: basal 40%, 30 days 30%, 60 days 30%',organic:'FYM 20 t/ha + vermicompost 5 t/ha incorporated before planting',pest:{None:'',
+    'Leaf spots / blight':'Purple blotch (Alternaria) — mancozeb 2.5g/L + sticker. Spray from 45 days onwards.',
+    'Insect damage':'Thrips — spinosad 0.5ml/L. Aphids — dimethoate 2ml/L. Spray in evening for best results.',
+    'Yellowing leaves':'Apply ferrous sulphate 0.5% + zinc sulphate 0.5% foliar spray. Check drainage.',
+    'Root rot':'Basal rot (Fusarium) — carbendazim 1g/L drench. Improved drainage. Crop rotation essential.',
+    'Wilting':'White rot (Sclerotium) — no chemical cure once established. Solarize soil. Use clean planting material.',
+    'Stunted growth':'Apply zinc sulphate 25 kg/ha + borax 10 kg/ha soil. Check nematodes in bulb zone.'}},
+
+  Cauliflower:{base:'NPK 120:60:60 kg/ha + boron 10 kg/ha',urea:'3 splits: transplanting 30%, 20 days 35%, curd initiation 35%',organic:'FYM 20 t/ha + vermicompost 5 t/ha incorporated before transplanting',pest:{None:'',
+    'Insect damage':'Diamond-back moth — spinosad 0.5ml/L or indoxacarb. Aphids — dimethoate 2ml/L. Cabbage looper — Bt spray.',
+    'Leaf spots / blight':'Downy mildew — metalaxyl-mancozeb 2.5g/L. Black rot (Xanthomonas) — copper oxychloride 3g/L.',
+    'Yellowing leaves':'Apply boron 10 kg/ha (critical for curd quality). Molybdenum 0.1g/L foliar spray.',
+    'Stunted growth':'Check for clubroot (Plasmodiophora) — lime soil to pH 7+. Liming 2–3 t/ha prevents infection.',
+    'Root rot':'Damping off — metalaxyl seed treatment. Improve drainage. Raise nursery beds.',
+    'Wilting':'Fusarium yellows — use resistant varieties. Carbendazim drench. Crop rotation with non-crucifer.'}},
+
+  Cabbage:{base:'NPK 120:60:60 kg/ha',urea:'3 splits: transplanting 30%, 20 days 35%, head formation 35%',organic:'FYM 20 t/ha + vermicompost 3 t/ha + trichoderma 2 kg/ha',pest:{None:'',
+    'Insect damage':'DBM — spinosad or indoxacarb. Cabbage butterfly — Bt spray or quinalphos 2ml/L. Aphids — dimethoate.',
+    'Leaf spots / blight':'Black rot — copper oxychloride 3g/L. Alternaria leaf spot — mancozeb 2.5g/L.',
+    'Yellowing leaves':'Apply boron 10 kg/ha + molybdenum 0.1g/L foliar. Check for clubroot and correct pH.',
+    'Root rot':'Clubroot — lime soil to pH 7+. Metalaxyl drench for Phytophthora root rot.',
+    'Wilting':'Fusarium yellows — resistant varieties. Carbendazim drench. Non-crucifer rotation for 3 years.',
+    'Stunted growth':'Apply micronutrients — zinc + boron + molybdenum. Check soil compaction and pH.'}},
+
+  Brinjal:{base:'NPK 150:75:75 kg/ha',urea:'4 splits: basal 25%, transplanting 25%, 40 days 25%, 70 days 25%',organic:'FYM 20 t/ha + vermicompost 5 t/ha + trichoderma 2 kg/ha at transplanting',pest:{None:'',
+    'Insect damage':'Shoot and fruit borer — spinosad 0.5ml/L. Remove wilted shoots. Set pheromone traps.',
+    'Leaf spots / blight':'Phomopsis blight — copper oxychloride 3g/L + mancozeb. Cercospora — mancozeb 2.5g/L.',
+    'Wilting':'Bacterial wilt (Ralstonia) — no chemical cure. Resistant rootstocks. Crop rotation essential.',
+    'Root rot':'Fusarium root rot — trichoderma + carbendazim drench. Raise beds 20 cm. Soil solarization.',
+    'Yellowing leaves':'Apply ferrous sulphate 0.5% + zinc 0.5% foliar. Check Mg — Epsom salt 2g/L spray.',
+    'Poor fruiting':'Boron 1g/L + zinc 0.5% foliar at flowering. Check thrips damage at bud. Ensure pollination.'}},
+
+  'Okra (Bhindi)':{base:'NPK 100:50:50 kg/ha',urea:'3 splits: basal 30%, 20 days 35%, 40 days 35%',organic:'FYM 15 t/ha + vermicompost 3 t/ha at land preparation',pest:{None:'',
+    'Insect damage':'Shoot and fruit borer — spinosad 0.5ml/L. YVMV (whitefly-transmitted) — imidacloprid 0.3ml/L.',
+    'Leaf spots / blight':'Cercospora leaf spot — mancozeb 2.5g/L. Powdery mildew — sulfur 2g/L or carbendazim.',
+    'Yellowing leaves':'Yellow vein mosaic virus — control whitefly vector with yellow sticky traps + imidacloprid.',
+    'Wilting':'Fusarium wilt — trichoderma seed treatment. Carbendazim drench. Avoid standing water.',
+    'Root rot':'Pythium damping off — metalaxyl + mancozeb drench. Raise beds. Improve drainage.',
+    'Stunted growth':'Apply zinc sulphate 25 kg/ha + boron 10 kg/ha soil. Check for nematodes.'}},
+
+  Cucumber:{base:'NPK 100:60:60 kg/ha',urea:'4 splits via fertigation: basal, 2 weeks, 4 weeks, 6 weeks',organic:'FYM 20 t/ha + vermicompost 5 t/ha + trichoderma 2 kg/ha',pest:{None:'',
+    'Insect damage':'Red pumpkin beetle — carbaryl 2g/L or chlorpyrifos 2ml/L. Aphids — dimethoate. Thrips — spinosad.',
+    'Leaf spots / blight':'Downy mildew — metalaxyl-mancozeb 2.5g/L. Powdery mildew — sulfur 2g/L.',
+    'Yellowing leaves':'Apply zinc sulphate 0.5% + ferrous sulphate 0.5% foliar. Check Mg — Epsom salt 2g/L.',
+    'Root rot':'Pythium crown rot — metalaxyl drench. Raise beds. Avoid waterlogging. Use grafted seedlings.',
+    'Wilting':'Fusarium wilt — no chemical cure. Crop rotation. Soil solarization. Grafted plants on resistant rootstock.',
+    'Poor fruiting':'Boron 1g/L at flowering. Ensure bee pollination. Check for hand pollination if needed.'}},
+
+  Watermelon:{base:'NPK 100:50:75 kg/ha',urea:'4 splits: basal 25%, 2 weeks 25%, flowering 25%, fruit set 25%',organic:'FYM 20 t/ha + vermicompost 3 t/ha. Trichoderma 2 kg/ha at planting.',pest:{None:'',
+    'Insect damage':'Red pumpkin beetle — carbaryl 2g/L at seedling stage. Aphids — dimethoate. Whitefly — imidacloprid.',
+    'Leaf spots / blight':'Downy mildew — metalaxyl-mancozeb 2.5g/L. Anthracnose — mancozeb 2.5g/L + carbendazim.',
+    'Yellowing leaves':'Apply zinc sulphate 0.5% + ferrous sulphate 0.5% foliar. Epsom salt 2g/L for Mg.',
+    'Root rot':'Fusarium crown rot — metalaxyl drench. Grafted plants on bottle gourd rootstock for resistance.',
+    'Wilting':'Bacterial fruit blotch — copper oxychloride 3g/L. Fusarium wilt — soil solarization. Rotation.',
+    'Poor fruiting':'Hand-pollinate early morning. Boron 1g/L at flowering. Ensure bees. Check fruit cracking — K deficiency.'}}
+};
+
+function getFertRec() {
+  const crop = document.getElementById('fertCrop').value;
+  const stage = document.getElementById('fertStage').value;
+  const problem = document.getElementById('fertProblem').value;
+  const data = fertData[crop] || fertData.Wheat;
+  const pestTip = data.pest[problem] || '';
+
+  const html = `
+    <div class="alert alert-green">✅ Recommendations for <strong>${crop}</strong> — ${stage}</div>
+    <div class="result-box">
+      <div class="result-title">Fertilizer Schedule</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.8;">
+        📊 <strong>Base NPK:</strong> ${data.base}<br/>
+        🌿 <strong>Nitrogen management:</strong> ${data.urea}<br/>
+        🪱 <strong>Organic input:</strong> ${data.organic}
+      </div>
+    </div>
+    ${pestTip?`<div class="result-box"><div class="result-title">Problem Treatment: ${problem}</div><div style="font-size:12px;color:var(--amber-100);line-height:1.8;">⚗️ ${pestTip}</div></div>`:''}
+    <div class="result-box">
+      <div class="result-title">IPM Principles</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7;">
+        ✅ Always identify pest correctly before spraying<br/>
+        ✅ Use pheromone traps for monitoring<br/>
+        ✅ Spray early morning or evening only<br/>
+        ✅ Follow label dose strictly — overdosing harms soil
+      </div>
+    </div>
+  `;
+  document.getElementById('fertResults').innerHTML = html;
+  document.getElementById('fb-fert').style.display = 'flex';
+  resetFeedbackBar('fert');
+  updateSidebarStats();
+}
+
+// ========================
+// SOIL ANALYZER
+// ========================
+function getMeterClass(val, low, high) {
+  if (val >= low && val <= high) return 'meter-green';
+  if (val < low*0.7 || val > high*1.3) return 'meter-red';
+  return 'meter-amber';
+}
+function getStatus(val, low, high) {
+  if (val >= low && val <= high) return {text:'Optimal',cls:'badge-green'};
+  if (val < low) return {text:'Low',cls:'badge-amber'};
+  return {text:'High',cls:'badge-red'};
+}
+
+function analyzeSoil() {
+  const pH = +document.getElementById('soilPH').value;
+  const OM = +document.getElementById('soilOM').value;
+  const N = +document.getElementById('soilN').value;
+  const P = +document.getElementById('soilP').value;
+  const K = +document.getElementById('soilK').value;
+  const Ca = +document.getElementById('soilCa').value;
+  const Mg = +document.getElementById('soilMg').value;
+  const moisture = +document.getElementById('soilMoisture').value;
+  const EC = +document.getElementById('soilEC').value;
+  const type = document.getElementById('soilType').value;
+
+  const params = [
+    {label:'pH',val:pH,low:6.0,high:7.5,unit:'',max:14,pct:pH/14*100},
+    {label:'Organic Matter',val:OM,low:2.5,high:5.0,unit:'%',max:8,pct:OM/8*100},
+    {label:'Nitrogen (N)',val:N,low:100,high:200,unit:' ppm',max:400,pct:N/400*100},
+    {label:'Phosphorus (P)',val:P,low:20,high:40,unit:' ppm',max:80,pct:P/80*100},
+    {label:'Potassium (K)',val:K,low:120,high:250,unit:' ppm',max:500,pct:K/500*100},
+    {label:'Calcium (Ca)',val:Ca,low:600,high:1500,unit:' ppm',max:3000,pct:Ca/3000*100},
+    {label:'Magnesium (Mg)',val:Mg,low:100,high:300,unit:' ppm',max:600,pct:Mg/600*100},
+    {label:'Moisture',val:moisture,low:25,high:60,unit:'%',max:100,pct:moisture},
+    {label:'EC (Salinity)',val:EC,low:0.2,high:1.5,unit:' dS/m',max:4,pct:EC/4*100},
+  ];
+
+  let score = 0;
+  let paramsHtml = `<div class="alert alert-blue" style="background:rgba(33,150,243,.1);border:1px solid rgba(33,150,243,.3);color:#90caf9;margin-bottom:10px;">Soil type: <strong>${type}</strong></div>`;
+  
+  params.forEach(p => {
+    const st = getStatus(p.val, p.low, p.high);
+    const cls = getMeterClass(p.val, p.low, p.high);
+    if (st.text === 'Optimal') score += 11;
+    else if (st.text === 'Low' || st.text === 'High') score += 5;
+    paramsHtml += `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+        <span style="font-size:12px;color:var(--text2);">${p.label}</span>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:12px;color:var(--text);">${p.val}${p.unit}</span>
+          <span class="badge ${st.cls}" style="font-size:10px;padding:2px 6px;">${st.text}</span>
+        </div>
+      </div>
+      <div class="meter-bar"><div class="meter-fill ${cls}" style="width:${Math.min(100,Math.round(p.pct))}%;"></div></div>
+    </div>`;
+  });
+
+  const overall = Math.min(100, Math.round(score));
+  let overallLabel = overall >= 75 ? 'Excellent' : overall >= 55 ? 'Good' : overall >= 35 ? 'Moderate' : 'Poor';
+  let overallCls = overall >= 75 ? 'alert-green' : overall >= 55 ? 'alert-amber' : 'alert-red';
+
+  // IMPROVEMENT RECOMMENDATIONS — detailed actions based on severity
+  let recs = [];
+  if (pH < 5.5) { recs.push({p:'🔴 Very acidic pH ('+pH+') — Critical',a:'Apply agricultural lime (CaCO₃) @ 3-5 t/ha. Repeat after 6 months. Avoid using ammonium sulfate fertilizer.'}); }
+  else if (pH < 6.0) { recs.push({p:'🟡 Acidic pH ('+pH+')',a:'Apply lime @ 1-2 t/ha basal. Use urea instead of ammonium sulfate. Can also apply dolomite for Ca+Mg correction.'}); }
+  else if (pH > 8.5) { recs.push({p:'🔴 Very alkaline pH ('+pH+') — Critical',a:'Apply elemental sulfur @ 500-1000 kg/ha + gypsum 1 t/ha. Use acidifying fertilizers (ammonium sulfate). Flood-irrigate to leach salts.'}); }
+  else if (pH > 8.0) { recs.push({p:'🟡 Alkaline pH ('+pH+')',a:'Apply gypsum 500 kg/ha + FYM 10 t/ha. Avoid alkaline fertilizers like SSP.'}); }
+
+  if (OM < 1.5) { recs.push({p:'🔴 Very low organic matter ('+OM+'%) — Critical',a:'Apply FYM 15-20 t/ha + vermicompost 5 t/ha. Practice green manuring (Dhaincha/Sesbania). Avoid burning crop residues — incorporate them.'}); }
+  else if (OM < 2.5) { recs.push({p:'🟡 Low organic matter ('+OM+'%)',a:'Apply FYM 10 t/ha + vermicompost 3 t/ha as basal. Add crop residues after harvest.'}); }
+
+  if (N < 60) { recs.push({p:'🔴 Very low Nitrogen ('+N+' ppm) — Critical',a:'Apply urea 150 kg/ha in 3 splits. Also apply FYM 10 t/ha. Use Azospirillum biofertilizer @ 5 kg/ha with seed treatment.'}); }
+  else if (N < 100) { recs.push({p:'🟡 Low Nitrogen ('+N+' ppm)',a:'Apply urea 60-80 kg/ha as top dressing. Use DAP as basal fertilizer.'}); }
+
+  if (P < 10) { recs.push({p:'🔴 Very low Phosphorus ('+P+' ppm) — Critical',a:'Apply SSP (Single Super Phosphate) @ 500 kg/ha or DAP 200 kg/ha as basal. Also use PSB biofertilizer (Phosphate Solubilizing Bacteria) @ 5 kg/ha.'}); }
+  else if (P < 20) { recs.push({p:'🟡 Low Phosphorus ('+P+' ppm)',a:'Apply DAP 100 kg/ha as basal dose before sowing. Use rock phosphate for long-term improvement.'}); }
+
+  if (K < 70) { recs.push({p:'🔴 Very low Potassium ('+K+' ppm) — Critical',a:'Apply MOP (Muriate of Potash) @ 150-200 kg/ha. Also apply wood ash 500 kg/ha for quick K boost. Use SOP in saline soils.'}); }
+  else if (K < 120) { recs.push({p:'🟡 Low Potassium ('+K+' ppm)',a:'Apply MOP 60-80 kg/ha. Incorporate banana peels and crop residues to build K organically.'}); }
+
+  if (moisture < 15) { recs.push({p:'🔴 Critically low moisture ('+moisture+'%)',a:'Irrigate immediately. Apply mulch (paddy straw, black plastic) 5-8 cm thick. Consider drip irrigation for efficiency.'}); }
+  if (EC > 2.5) { recs.push({p:'🔴 High salinity EC ('+EC+' dS/m) — Toxic to most crops',a:'Flood-leach fields 3-4 times. Apply gypsum 2 t/ha. Grow salt-tolerant crops: Barley, Berseem, Rice. Avoid further saline water irrigation.'}); }
+  else if (EC > 1.5) { recs.push({p:'🟡 Slightly saline soil ('+EC+' dS/m)',a:'Apply gypsum 500 kg/ha. Use canal water for irrigation. Grow tolerant varieties.'}); }
+
+  // CROP SUITABILITY from soil
+  const soilCropMap = {
+    'Black Cotton': [{name:'Cotton',icon:'🤍'},{name:'Soybean',icon:'🫘'},{name:'Sorghum (Jowar)',icon:'🌾'},{name:'Sugarcane',icon:'🎋'},{name:'Chickpea',icon:'🟤'},{name:'Wheat',icon:'🌿'}],
+    'Red Laterite': [{name:'Groundnut',icon:'🥜'},{name:'Ragi (Finger millet)',icon:'🌾'},{name:'Maize',icon:'🌽'},{name:'Sunflower',icon:'🌻'},{name:'Chilli',icon:'🌶️'},{name:'Turmeric',icon:'🟡'}],
+    'Alluvial':     [{name:'Wheat',icon:'🌿'},{name:'Rice',icon:'🌾'},{name:'Sugarcane',icon:'🎋'},{name:'Potato',icon:'🥔'},{name:'Mustard',icon:'🌼'},{name:'Maize',icon:'🌽'}],
+    'Sandy Loam':   [{name:'Pearl Millet (Bajra)',icon:'🌾'},{name:'Groundnut',icon:'🥜'},{name:'Castor',icon:'🌿'},{name:'Sesame',icon:'⚪'},{name:'Watermelon',icon:'🍉'},{name:'Chickpea',icon:'🟤'}],
+    'Clay':         [{name:'Rice',icon:'🌾'},{name:'Sugarcane',icon:'🎋'},{name:'Jute',icon:'🟫'},{name:'Lotus',icon:'🌸'},{name:'Taro',icon:'🟤'},{name:'Banana',icon:'🍌'}],
+    'Silt Loam':    [{name:'Rice',icon:'🌾'},{name:'Wheat',icon:'🌿'},{name:'Vegetables',icon:'🥦'},{name:'Banana',icon:'🍌'},{name:'Maize',icon:'🌽'},{name:'Jute',icon:'🟫'}],
+  };
+
+  // Also match by pH
+  let pHCrops = '';
+  if (pH < 5.5) pHCrops = 'Best for very acidic soil: Tea, Blueberry, Pineapple, Rice, Potato.';
+  else if (pH < 6.0) pHCrops = 'Good for: Rice, Maize, Groundnut, Potato, Sweet potato.';
+  else if (pH <= 7.0) pHCrops = 'Ideal neutral range — suits: Wheat, Tomato, Onion, Maize, Soybean, most vegetables.';
+  else if (pH <= 8.0) pHCrops = 'Slightly alkaline — suits: Wheat, Barley, Mustard, Chickpea, Sugarcane, Cotton.';
+  else pHCrops = 'Highly alkaline — only tolerant crops: Barley, Berseem, Sesbania. Needs pH correction.';
+
+  const suggestedCrops = soilCropMap[type] || soilCropMap['Alluvial'];
+  let cropHtml = suggestedCrops.map(c=>`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.25);border-radius:16px;padding:4px 10px;font-size:12px;margin:3px;">${c.icon} ${c.name}</span>`).join('');
+
+  // FERTILIZER SUGGESTION for poor soil
+  let fertHtml = '';
+  if (overall < 55) {
+    fertHtml = `<div class="result-box" style="margin-top:10px;">
+      <div class="result-title" style="color:#ffd54f;">⚗️ Immediate Fertilizer Plan</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.9;">
+        ${N < 100 ? '🌿 <b>Nitrogen:</b> Urea 60-100kg/ha (split 2-3 doses)<br/>' : ''}
+        ${P < 20 ? '🟤 <b>Phosphorus:</b> DAP 100kg/ha or SSP 300kg/ha (basal)<br/>' : ''}
+        ${K < 120 ? '🟡 <b>Potassium:</b> MOP 80-120kg/ha (basal or split)<br/>' : ''}
+        ${OM < 2.5 ? '🪱 <b>Organic:</b> FYM 10t/ha + Vermicompost 3t/ha<br/>' : ''}
+        ${Ca < 600 ? '⬜ <b>Calcium:</b> Lime/Gypsum 500-1000kg/ha<br/>' : ''}
+        ${Mg < 100 ? '🔵 <b>Magnesium:</b> MgSO₄ (Epsom salt) 25kg/ha foliar spray<br/>' : ''}
+        ✅ Apply micronutrients: ZnSO₄ 25kg/ha + Borax 10kg/ha for micronutrient correction.
+      </div>
+    </div>`;
+  }
+
+  let recsHtml = recs.length > 0 ? `<div class="result-box" style="margin-top:10px;">
+    <div class="result-title">Improvement Actions</div>
+    <div style="font-size:12px;line-height:1.9;">
+      ${recs.map(r=>`<div style="margin-bottom:6px;"><span style="color:#ffd54f;">${r.p}</span><br/><span style="color:var(--text2);">${r.a}</span></div>`).join('')}
+    </div>
+  </div>` : '';
+
+  const html = `
+    <div class="${overallCls} alert" style="font-size:14px;font-weight:600;">Overall Soil Health: ${overallLabel} (${overall}/100)</div>
+    ${paramsHtml}
+    <div class="result-box" style="margin-top:10px;">
+      <div class="result-title">Recommended Crops for ${type} Soil</div>
+      <div style="margin-top:6px;">${cropHtml}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;">pH note: ${pHCrops}</div>
+    </div>
+    ${recsHtml}
+    ${fertHtml}
+  `;
+  document.getElementById('soilResults').innerHTML = html;
+  document.getElementById('fb-soil').style.display = 'flex';
+  resetFeedbackBar('soil');
+  updateSidebarStats();
+}
+
+// ========================
+// FEEDBACK ENGINE
+// ========================
+const FB_KEY = 'agrovision_feedback_v1';
+
+function loadFeedback() {
+  try { return JSON.parse(localStorage.getItem(FB_KEY)) || {}; } catch(e) { return {}; }
+}
+function saveFeedback(data) {
+  try { localStorage.setItem(FB_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function submitFeedback(feature, vote, btnEl) {
+  const fb = loadFeedback();
+  if (!fb[feature]) fb[feature] = {up:0, neutral:0, down:0, history:[]};
+
+  fb[feature][vote]++;
+  fb[feature].history.push({
+    vote,
+    timestamp: new Date().toISOString(),
+    params: getContextParams(feature)
+  });
+
+  saveFeedback(fb);
+
+  // Visual feedback on buttons
+  const bar = btnEl.closest('.feedback-bar');
+  bar.querySelectorAll('.fb-btn').forEach(b => {
+    b.classList.remove('voted-up','voted-down','voted-neutral');
+    b.disabled = true;
+    b.style.opacity = '0.5';
+  });
+  btnEl.classList.add(vote==='up'?'voted-up':vote==='down'?'voted-down':'voted-neutral');
+  btnEl.disabled = false;
+  btnEl.style.opacity = '1';
+
+  // Update counts
+  const upEl = document.getElementById(`fb-${feature}-up`);
+  const downEl = document.getElementById(`fb-${feature}-down`);
+  if (upEl) upEl.textContent = fb[feature].up;
+  if (downEl) downEl.textContent = fb[feature].down;
+
+  // Toast
+  const msgs = {
+    up: ['Thanks! This helps us improve 🌱', 'Great! Feedback recorded ✅', 'Glad it helped! 👍'],
+    neutral: ['Got it — we\'ll keep improving 🔄', 'Noted! We\'ll refine this 📝'],
+    down: ['Sorry it wasn\'t helpful. We\'ll improve! 🔧', 'Thanks for honest feedback — helps us learn 📊']
+  };
+  showToast(msgs[vote][Math.floor(Math.random()*msgs[vote].length)]);
+
+  updateSidebarStats();
+  maybeAdjustWeights(feature, vote);
+}
+
+function getContextParams(feature) {
+  try {
+    if (feature === 'crop') return {
+      N: document.getElementById('paramN')?.value,
+      P: document.getElementById('paramP')?.value,
+      K: document.getElementById('paramK')?.value,
+      temp: document.getElementById('paramTemp')?.value,
+      pH: document.getElementById('paramPH')?.value,
+      city: document.getElementById('cropCity')?.value
+    };
+    if (feature === 'soil') return {
+      pH: document.getElementById('soilPH')?.value,
+      N: document.getElementById('soilN')?.value,
+      type: document.getElementById('soilType')?.value
+    };
+    if (feature === 'fert') return {
+      crop: document.getElementById('fertCrop')?.value,
+      stage: document.getElementById('fertStage')?.value,
+      problem: document.getElementById('fertProblem')?.value
+    };
+  } catch(e) {}
+  return {};
+}
+
+function resetFeedbackBar(feature) {
+  const fb = loadFeedback();
+  const data = fb[feature] || {up:0,down:0};
+  const upEl = document.getElementById(`fb-${feature}-up`);
+  const downEl = document.getElementById(`fb-${feature}-down`);
+  if (upEl) upEl.textContent = data.up || 0;
+  if (downEl) downEl.textContent = data.down || 0;
+  const bar = document.getElementById(`fb-${feature}`);
+  if (bar) {
+    bar.querySelectorAll('.fb-btn').forEach(b => {
+      b.disabled = false;
+      b.style.opacity = '1';
+      b.classList.remove('voted-up','voted-down','voted-neutral');
+    });
+  }
+}
+
+function updateSidebarStats() {
+  const fb = loadFeedback();
+  ['crop','soil','fert','chat'].forEach(f => {
+    const data = fb[f] || {up:0,neutral:0,down:0};
+    const total = data.up + data.neutral + data.down;
+    const pct = total > 0 ? Math.round((data.up / total) * 100) : 0;
+    const barEl = document.getElementById(`fb-bar-${f}`);
+    const numEl = document.getElementById(`fb-num-${f}`);
+    if (barEl) barEl.style.width = pct + '%';
+    if (numEl) numEl.textContent = total > 0 ? pct + '%' : '—';
+    if (barEl && total > 0) {
+      barEl.style.background = pct >= 70 ? 'var(--accent)' : pct >= 40 ? '#ffc107' : '#ef5350';
+    }
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toastEl');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ========================
+// LEARNING — adjust weights based on feedback
+// ========================
+let cropScoreBoost = {}; // crop name → boost multiplier
+
+function maybeAdjustWeights(feature, vote) {
+  if (feature !== 'crop') return;
+  // Get the top recommended crop from current results
+  const firstCrop = document.querySelector('#cropResults .crop-name');
+  if (!firstCrop) return;
+  const cropName = firstCrop.textContent.trim();
+  if (!cropScoreBoost[cropName]) cropScoreBoost[cropName] = 1.0;
+  if (vote === 'up') {
+    cropScoreBoost[cropName] = Math.min(1.5, cropScoreBoost[cropName] + 0.05);
+    showToast(`✅ "${cropName}" recommendation weight increased!`);
+  } else if (vote === 'down') {
+    cropScoreBoost[cropName] = Math.max(0.5, cropScoreBoost[cropName] - 0.08);
+  }
+  // Persist boosts
+  try {
+    const saved = JSON.parse(localStorage.getItem('agrovision_weights') || '{}');
+    saved[cropName] = cropScoreBoost[cropName];
+    localStorage.setItem('agrovision_weights', JSON.stringify(saved));
+  } catch(e) {}
+}
+
+function loadSavedWeights() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('agrovision_weights') || '{}');
+    Object.assign(cropScoreBoost, saved);
+  } catch(e) {}
+}
+
+// Init on load
+loadSavedWeights();
+updateSidebarStats();
+</script>
+</body>
+</html>
