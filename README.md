@@ -1,6 +1,7 @@
 # 🌿 AgroVision v2 — Smart Farming Platform
 
 **Data Training:** https://www.kaggle.com/code/shreyashmandlik25/agrovision
+
 **HF model Spcae:**[ huggingface.co/spaces/ShreyashM25/agrovision-api](https://huggingface.co/spaces/ShreyashM25/agrovision-api)
 **API:** https://ShreyashM25-agrovision-api.hf.space
 **Live Demo:** https://shreyash-mandlik.github.io/Agrovision/
