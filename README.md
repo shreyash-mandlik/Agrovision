@@ -2,7 +2,7 @@
 
 **Live Demo:** https://shreyash-mandlik.github.io/Agrovision/
 **API:** https://ShreyashM25-agrovision-api.hf.space
-**Spcae:** huggingface.co/spaces/ShreyashM25/agrovision-api
+**Spcae:**[ huggingface.co/spaces/ShreyashM25/agrovision-api](https://huggingface.co/spaces/ShreyashM25/agrovision-api)
 
 AI-powered smart farming platform for Indian farmers.
 
